@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: #060b11;
+  --background-elevated: rgba(15, 23, 33, 0.76);
+  --foreground: #edf2f7;
+  --muted: #99a3b4;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --accent: #f4c97a;
+  --accent-deep: #c69231;
+  --surface: #0c141d;
+  --surface-2: #121d29;
+  --font-sans:
+    "Avenir Next", "Segoe UI", "Helvetica Neue", "Trebuchet MS", sans-serif;
+  --font-display:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(244, 201, 122, 0.12), transparent 24%),
+    radial-gradient(circle at 85% 15%, rgba(92, 122, 145, 0.18), transparent 26%),
+    linear-gradient(180deg, #05080d 0%, #09111a 48%, #05070b 100%);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+* {
+  border-color: var(--card-border);
+}
+
+.font-display {
+  font-family: var(--font-display), serif;
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, rgba(18, 28, 39, 0.88), rgba(10, 15, 22, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.mesh-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.mesh-card::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at top, rgba(244, 201, 122, 0.14), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(71, 98, 121, 0.16), transparent 34%);
+  pointer-events: none;
+}
+
+.grid-glow {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
