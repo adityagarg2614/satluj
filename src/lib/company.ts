@@ -11,7 +11,7 @@ export const companyData = {
     "Built around industrial discipline and resource efficiency, our process reduces waste, extracts reusable metal, and delivers a sand-like finished product suitable for downstream use.",
   contact: {
     phone: "+91-9812531501",
-    address: "Hisar, Haryana, India",
+    address: "Khanak, Haryana 127040",
     email: "satluj65@gmail.com",
     mapUrl: "https://maps.app.goo.gl/tgSmPed6iVaFb5eY6",
   },
