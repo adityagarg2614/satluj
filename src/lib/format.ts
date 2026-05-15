@@ -57,6 +57,20 @@ export function formatMonthLabel(monthKey: string) {
   }).format(new Date(year, month - 1, 1));
 }
 
+export function formatDateLabel(dateKey: string) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${dateKey}T00:00:00`));
+}
+
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 export function getMonthDateKeys(monthKey: string) {
   const [year, month] = monthKey.split("-").map(Number);
   const currentMonthKey = getCurrentMonthKey();
