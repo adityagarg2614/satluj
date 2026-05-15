@@ -54,6 +54,10 @@ const navItems: NavItem[] = [
         title: "Monthly Summary",
         href: "/admin/attendance-summary",
       },
+      {
+        title: "Daybook",
+        href: "/admin/daybook",
+      },
     ],
   },
 ];
@@ -71,6 +75,10 @@ function getPageTitle(pathname: string) {
     return "Monthly Attendance Summary";
   }
 
+  if (pathname === "/admin/daybook") {
+    return "Daybook";
+  }
+
   return "Admin Dashboard";
 }
 
@@ -81,7 +89,8 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
   const managementActive = useMemo(
     () =>
       pathname.startsWith("/admin/workers") ||
-      pathname.startsWith("/admin/attendance"),
+      pathname.startsWith("/admin/attendance") ||
+      pathname.startsWith("/admin/daybook"),
     [pathname],
   );
   const [managementOpen, setManagementOpen] = useState(managementActive);

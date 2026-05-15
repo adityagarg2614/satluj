@@ -4,8 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
+import { getCurrentMonthKey, getDateKeyFromDate, getTodayDateKey } from "@/lib/format";
+
 type DateNavigatorProps = {
   date: string;
+  basePath?: string;
 };
 
 type MonthNavigatorProps = {
@@ -13,9 +16,10 @@ type MonthNavigatorProps = {
 };
 
 function shiftDate(dateKey: string, amount: number) {
-  const date = new Date(`${dateKey}T00:00:00`);
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + amount);
-  return date.toISOString().slice(0, 10);
+  return getDateKeyFromDate(date);
 }
 
 function shiftMonth(monthKey: string, amount: number) {
@@ -24,7 +28,10 @@ function shiftMonth(monthKey: string, amount: number) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export function AttendanceDateNavigator({ date }: DateNavigatorProps) {
+export function AttendanceDateNavigator({
+  date,
+  basePath = "/admin/attendance",
+}: DateNavigatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -34,11 +41,11 @@ export function AttendanceDateNavigator({ date }: DateNavigatorProps) {
     params.set("date", nextDate);
 
     startTransition(() => {
-      router.replace(`/admin/attendance?${params.toString()}`, { scroll: false });
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
     });
   };
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayDateKey();
 
   return (
     <div className="flex flex-col gap-3 lg:items-end">
@@ -114,7 +121,7 @@ export function AttendanceMonthNavigator({ month }: MonthNavigatorProps) {
     });
   };
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  const currentMonth = getCurrentMonthKey();
 
   return (
     <div className="flex flex-col gap-3 lg:items-end">
