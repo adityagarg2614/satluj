@@ -16,6 +16,8 @@ import {
   AttendanceModel,
   type AttendanceStatus,
 } from "@/models/attendance";
+import { CompanyModel } from "@/models/company";
+import { DAYBOOK_ENTRY_TYPES, DaybookEntryModel } from "@/models/daybook-entry";
 import { WorkerModel } from "@/models/worker";
 
 function getStatusDayValue(status: AttendanceStatus) {
@@ -124,4 +126,111 @@ export async function saveAttendanceAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/attendance");
   redirect(`/admin/attendance?date=${dateKey}&success=attendance-saved`);
+}
+
+function normalizeCompanyName(name: string) {
+  return name.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export async function addDaybookEntryAction(formData: FormData) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const entryType = String(formData.get("entryType") ?? "");
+  const entryDateKey = normalizeDateKey(String(formData.get("entryDate") ?? ""));
+  const partyName = String(formData.get("partyName") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim();
+
+  if (!DAYBOOK_ENTRY_TYPES.includes(entryType as (typeof DAYBOOK_ENTRY_TYPES)[number])) {
+    redirect(`/admin/daybook?date=${entryDateKey}&error=invalid-type`);
+  }
+
+  if (!partyName) {
+    redirect(`/admin/daybook?date=${entryDateKey}&error=missing-party`);
+  }
+
+  const payload: Record<string, string | number | Date> = {
+    entryDateKey,
+    entryDate: new Date(`${entryDateKey}T00:00:00.000Z`),
+    type: entryType,
+    partyName,
+    category: String(formData.get("category") ?? "").trim() || entryType,
+    note,
+  };
+
+  if (entryType === "purchase") {
+    const purchaseSource = String(formData.get("purchaseSource") ?? "").trim();
+    const materialName = String(
+      formData.get("materialName") ?? formData.get("otherMaterialName") ?? "",
+    ).trim();
+    const otherMaterialName = String(formData.get("otherMaterialName") ?? "").trim();
+    const finalMaterialName = materialName === "Other" ? otherMaterialName : materialName;
+    const vehicleNumber = String(formData.get("vehicleNumber") ?? "").trim();
+    const driverName = String(formData.get("driverName") ?? "").trim();
+    const driverPhone = String(formData.get("driverPhone") ?? "").trim();
+    const weight = Number(formData.get("weight") ?? 0);
+
+    if (!purchaseSource || !finalMaterialName || !vehicleNumber || !driverName || !driverPhone || !weight) {
+      redirect(`/admin/daybook?date=${entryDateKey}&error=missing-fields`);
+    }
+
+    payload.category = purchaseSource;
+    payload.materialSource = purchaseSource;
+    payload.materialName = finalMaterialName;
+    payload.vehicleNumber = vehicleNumber;
+    payload.driverName = driverName;
+    payload.driverPhone = driverPhone;
+    payload.weight = weight;
+  }
+
+  if (entryType === "sale") {
+    const materialName = String(formData.get("materialName") ?? "").trim();
+    const vehicleNumber = String(formData.get("vehicleNumber") ?? "").trim();
+    const driverName = String(formData.get("driverName") ?? "").trim();
+    const driverPhone = String(formData.get("driverPhone") ?? "").trim();
+    const weight = Number(formData.get("weight") ?? 0);
+
+    if (!materialName || !vehicleNumber || !driverName || !driverPhone || !weight) {
+      redirect(`/admin/daybook?date=${entryDateKey}&error=missing-fields`);
+    }
+
+    payload.category = "company-sale";
+    payload.materialName = materialName;
+    payload.vehicleNumber = vehicleNumber;
+    payload.driverName = driverName;
+    payload.driverPhone = driverPhone;
+    payload.weight = weight;
+
+    const normalizedName = normalizeCompanyName(partyName);
+    await CompanyModel.findOneAndUpdate(
+      { normalizedName },
+      {
+        name: partyName,
+        normalizedName,
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+  }
+
+  if (entryType === "payment_given" || entryType === "payment_received") {
+    const amount = Number(formData.get("amount") ?? 0);
+    const category = String(formData.get("category") ?? "").trim();
+
+    if (!amount || !category) {
+      redirect(`/admin/daybook?date=${entryDateKey}&error=missing-fields`);
+    }
+
+    payload.category = category;
+    payload.amount = amount;
+  }
+
+  await DaybookEntryModel.create(payload);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/daybook");
+  redirect(`/admin/daybook?date=${entryDateKey}&success=entry-added`);
 }
