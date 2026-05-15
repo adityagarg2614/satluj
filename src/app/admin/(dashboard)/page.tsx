@@ -64,6 +64,12 @@ export default async function AdminDashboardHomePage() {
                 description:
                   "See all workers together for the selected month with present, half day, and absent totals.",
               },
+              {
+                title: "Maintain the digital daybook",
+                href: "/admin/daybook",
+                description:
+                  "Record purchases, sales, outgoing payments, and received payments for each working day.",
+              },
             ].map((item) => (
               <Link
                 key={item.href}
