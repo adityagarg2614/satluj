@@ -164,6 +164,8 @@ export default function HomePage() {
                       src="/media/site-signboard.jpeg"
                       alt="Satluj Stones Crushing Mills office and signboard"
                       fill
+                      priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950 via-slate-950/75 to-transparent p-6">
@@ -228,6 +230,7 @@ export default function HomePage() {
                         src={product.image}
                         alt={product.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover transition duration-700 hover:scale-105"
                       />
                     </div>
@@ -263,7 +266,7 @@ export default function HomePage() {
                       alt="Wide view of the Satluj Stones plant yard and processing area"
                       width={1600}
                       height={900}
-                      className="h-[22rem] w-full object-cover md:h-[32rem]"
+                      className="h-88 w-full object-cover md:h-128"
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950 via-slate-950/70 to-transparent p-6">
                       <p className="text-xs uppercase tracking-[0.28em] text-amber-200">
@@ -398,6 +401,7 @@ export default function HomePage() {
                         src={companyData.founder.image}
                         alt={companyData.founder.name}
                         fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover object-top"
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950 via-slate-950/78 to-transparent p-6">
