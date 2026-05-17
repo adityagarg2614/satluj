@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, MouseEvent, FormEvent } from "react";
+import type { ReactNode, MouseEvent } from "react";
 import { useRef, useState } from "react";
 import { ShieldAlert, TriangleAlert } from "lucide-react";
 import { useFormStatus } from "react-dom";
@@ -45,7 +45,7 @@ export function ConfirmSubmitButton({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-130 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
             onClick={() => setOpen(false)}

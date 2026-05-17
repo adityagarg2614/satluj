@@ -96,11 +96,11 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
   const managementActive = useMemo(
     () =>
       pathname.startsWith("/admin/workers") ||
-      pathname.startsWith("/admin/attendance") ||
-      pathname.startsWith("/admin/daybook"),
+      pathname.startsWith("/admin/attendance"),
     [pathname],
   );
   const [managementOpen, setManagementOpen] = useState(managementActive);
+
   const isManagementOpen = managementActive || managementOpen;
 
   const sidebar = (
