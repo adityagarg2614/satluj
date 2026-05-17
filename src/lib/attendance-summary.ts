@@ -1,4 +1,5 @@
 import { getDateKeyFromDate, getMonthDateKeys } from "@/lib/format";
+import { calculateWorkerDailyRate } from "@/lib/salary";
 import type { AttendanceStatus } from "@/models/attendance";
 
 type WorkerSummaryInput = {
@@ -8,6 +9,7 @@ type WorkerSummaryInput = {
   name: string;
   role: string;
   joiningDate: Date | string;
+  salary?: number;
   phoneNumber: string;
   photoUrl?: string;
 };
@@ -25,12 +27,16 @@ export type MonthlyWorkerAttendanceSummary = {
   name: string;
   role: string;
   joiningDate: Date | string;
+  salary: number;
   phoneNumber: string;
   photoUrl?: string;
   present: number;
   half: number;
   absent: number;
   trackedDays: number;
+  workedUnits: number;
+  dailyRate: number;
+  earnedAmount: number;
 };
 
 export function buildMonthlyAttendanceSummary(
@@ -53,6 +59,8 @@ export function buildMonthlyAttendanceSummary(
     const workerId = worker._id.toString();
     const joinDateKey = getDateKeyFromDate(new Date(worker.joiningDate));
     const workerAttendance = attendanceByWorker.get(workerId) ?? new Map<string, AttendanceStatus>();
+    const salary = Number(worker.salary ?? 0);
+    const dailyRate = calculateWorkerDailyRate(salary, monthKey);
 
     const counts = dateKeys.reduce(
       (acc, dateKey) => {
@@ -65,8 +73,10 @@ export function buildMonthlyAttendanceSummary(
 
         if (status === "present") {
           acc.present += 1;
+          acc.workedUnits += 1;
         } else if (status === "half") {
           acc.half += 1;
+          acc.workedUnits += 0.5;
         } else {
           acc.absent += 1;
         }
@@ -77,6 +87,7 @@ export function buildMonthlyAttendanceSummary(
         present: 0,
         half: 0,
         absent: 0,
+        workedUnits: 0,
       },
     );
 
@@ -85,12 +96,16 @@ export function buildMonthlyAttendanceSummary(
       name: worker.name,
       role: worker.role,
       joiningDate: worker.joiningDate,
+      salary,
       phoneNumber: worker.phoneNumber,
       photoUrl: worker.photoUrl,
       present: counts.present,
       half: counts.half,
       absent: counts.absent,
       trackedDays: dateKeys.length,
+      workedUnits: counts.workedUnits,
+      dailyRate,
+      earnedAmount: counts.workedUnits * dailyRate,
     };
   });
 
