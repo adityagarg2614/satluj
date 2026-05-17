@@ -114,6 +114,29 @@ export async function deleteWorkerAction(formData: FormData) {
   redirect(`${returnTo}${separator}success=worker-deleted`);
 }
 
+export async function updateWorkerSalaryAction(formData: FormData) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const workerId = String(formData.get("workerId") ?? "").trim();
+  const salary = Number(formData.get("salary") ?? 0);
+  const requestedReturnTo = String(formData.get("returnTo") ?? "/admin/workers").trim();
+  const returnTo =
+    requestedReturnTo.startsWith("/admin") ? requestedReturnTo : "/admin/workers";
+  const separator = returnTo.includes("?") ? "&" : "?";
+
+  if (!workerId || !salary) {
+    redirect(`${returnTo}${separator}error=worker-salary-fields`);
+  }
+
+  await WorkerModel.findByIdAndUpdate(workerId, { salary });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/workers");
+  revalidatePath("/admin/attendance-summary");
+  redirect(`${returnTo}${separator}success=worker-salary-updated`);
+}
+
 export async function saveAttendanceAction(formData: FormData) {
   await requireAdminSession();
   await connectToDatabase();
