@@ -1,7 +1,12 @@
 import { Plus, Trash2, Users } from "lucide-react";
 
-import { addWorkerAction, deleteWorkerAction } from "@/app/admin/actions";
+import {
+  addWorkerAction,
+  deleteWorkerAction,
+  updateWorkerSalaryAction,
+} from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { AdminStatusToast } from "@/components/admin-toast";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -19,11 +24,13 @@ type WorkerPageProps = {
 const successMessages: Record<string, string> = {
   "worker-added": "Worker added successfully.",
   "worker-deleted": "Worker deleted successfully.",
+  "worker-salary-updated": "Worker salary updated successfully.",
 };
 
 const errorMessages: Record<string, string> = {
   "worker-fields": "Please complete every required worker field before saving.",
   "worker-delete-missing": "Unable to delete worker because the worker id was missing.",
+  "worker-salary-fields": "Please enter a valid salary before updating.",
 };
 
 export default async function WorkersPage({ searchParams }: WorkerPageProps) {
@@ -39,19 +46,9 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
 
   return (
     <main className="mx-auto max-w-7xl">
-      {successMessage ? (
-        <div className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 px-5 py-4 text-sm text-emerald-100">
-          {successMessage}
-        </div>
-      ) : null}
+      <AdminStatusToast successMessage={successMessage} errorMessage={errorMessage} />
 
-      {errorMessage ? (
-        <div className="rounded-3xl border border-rose-300/20 bg-rose-300/10 px-5 py-4 text-sm text-rose-100">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      <section className={`${successMessage || errorMessage ? "mt-6" : ""} grid gap-6 xl:grid-cols-[0.9fr_1.1fr]`}>
+      <section className="grid gap-6">
         <div className="glass-panel rounded-4xl p-7">
           <div className="flex items-center gap-3">
             <Plus className="size-5 text-amber-200" />
@@ -175,6 +172,24 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
                     <p>Phone: {worker.phoneNumber}</p>
                     <p>Photo: {worker.photoUrl ? "Added" : "Not added"}</p>
                   </div>
+
+                  <form action={updateWorkerSalaryAction} className="mt-5 flex flex-col gap-3 sm:flex-row">
+                    <input type="hidden" name="workerId" value={worker._id.toString()} />
+                    <input type="hidden" name="returnTo" value="/admin/workers" />
+                    <input
+                      type="number"
+                      name="salary"
+                      min="0"
+                      step="0.01"
+                      defaultValue={worker.salary ?? 0}
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300/40"
+                    />
+                    <SubmitButton
+                      label="Update Salary"
+                      pendingLabel="Updating..."
+                      className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-300/30 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+                    />
+                  </form>
 
                   <form action={deleteWorkerAction} className="mt-5">
                     <input type="hidden" name="workerId" value={worker._id.toString()} />

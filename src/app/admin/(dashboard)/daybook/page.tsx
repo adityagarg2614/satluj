@@ -5,6 +5,7 @@ import {
   Truck,
 } from "lucide-react";
 
+import { AdminStatusToast } from "@/components/admin-toast";
 import { DaybookEntriesView } from "@/components/daybook-entries-view";
 import { DaybookForm } from "@/components/daybook-form";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
@@ -67,19 +68,9 @@ export default async function DaybookPage({ searchParams }: DaybookPageProps) {
 
   return (
     <main className="mx-auto max-w-7xl">
-      {successMessage ? (
-        <div className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 px-5 py-4 text-sm text-emerald-100">
-          {successMessage}
-        </div>
-      ) : null}
+      <AdminStatusToast successMessage={successMessage} errorMessage={errorMessage} />
 
-      {errorMessage ? (
-        <div className="rounded-3xl border border-rose-300/20 bg-rose-300/10 px-5 py-4 text-sm text-rose-100">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      <section className={`${successMessage || errorMessage ? "mt-6" : ""} glass-panel rounded-4xl p-8`}>
+      <section className="glass-panel rounded-4xl p-8">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.32em] text-amber-200">Daybook</p>

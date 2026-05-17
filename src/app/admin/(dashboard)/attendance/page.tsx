@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { saveAttendanceAction } from "@/app/admin/actions";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
+import { AdminStatusToast } from "@/components/admin-toast";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, normalizeDateKey } from "@/lib/format";
@@ -69,19 +70,9 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
 
   return (
     <main className="mx-auto max-w-7xl">
-      {successMessage ? (
-        <div className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 px-5 py-4 text-sm text-emerald-100">
-          {successMessage}
-        </div>
-      ) : null}
+      <AdminStatusToast successMessage={successMessage} errorMessage={errorMessage} />
 
-      {errorMessage ? (
-        <div className="rounded-3xl border border-rose-300/20 bg-rose-300/10 px-5 py-4 text-sm text-rose-100">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      <section className={`${successMessage || errorMessage ? "mt-6" : ""} grid gap-5 md:grid-cols-2 xl:grid-cols-4`}>
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {[
           {
             icon: Users,
