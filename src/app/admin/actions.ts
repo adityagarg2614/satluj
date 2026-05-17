@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db";
 import { normalizeDateKey } from "@/lib/format";
+import { WORKER_PAYMENT_CATEGORIES } from "@/lib/salary";
 import {
   ATTENDANCE_STATUSES,
   AttendanceModel,
@@ -67,10 +68,11 @@ export async function addWorkerAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const role = String(formData.get("role") ?? "").trim();
   const joiningDate = String(formData.get("joiningDate") ?? "").trim();
+  const salary = Number(formData.get("salary") ?? 0);
   const phoneNumber = String(formData.get("phoneNumber") ?? "").trim();
   const photoUrl = String(formData.get("photoUrl") ?? "").trim();
 
-  if (!name || !role || !joiningDate || !phoneNumber) {
+  if (!name || !role || !joiningDate || !phoneNumber || !salary) {
     redirect("/admin/workers?error=worker-fields");
   }
 
@@ -78,6 +80,7 @@ export async function addWorkerAction(formData: FormData) {
     name,
     role,
     joiningDate: new Date(joiningDate),
+    salary,
     phoneNumber,
     photoUrl,
   });
@@ -85,6 +88,30 @@ export async function addWorkerAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/workers");
   redirect("/admin/workers?success=worker-added");
+}
+
+export async function deleteWorkerAction(formData: FormData) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const workerId = String(formData.get("workerId") ?? "").trim();
+  const requestedReturnTo = String(formData.get("returnTo") ?? "/admin/workers").trim();
+  const returnTo =
+    requestedReturnTo.startsWith("/admin") ? requestedReturnTo : "/admin/workers";
+  const separator = returnTo.includes("?") ? "&" : "?";
+
+  if (!workerId) {
+    redirect(`${returnTo}${separator}error=worker-delete-missing`);
+  }
+
+  await AttendanceModel.deleteMany({ workerId });
+  await WorkerModel.findByIdAndDelete(workerId);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/workers");
+  revalidatePath("/admin/attendance");
+  revalidatePath("/admin/attendance-summary");
+  redirect(`${returnTo}${separator}success=worker-deleted`);
 }
 
 export async function saveAttendanceAction(formData: FormData) {
@@ -226,6 +253,18 @@ export async function addDaybookEntryAction(formData: FormData) {
 
     payload.category = category;
     payload.amount = amount;
+
+    if (entryType === "payment_given" && WORKER_PAYMENT_CATEGORIES.includes(category as (typeof WORKER_PAYMENT_CATEGORIES)[number])) {
+      const relatedWorker = await WorkerModel.findOne({
+        name: new RegExp(`^${partyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
+      })
+        .select("_id")
+        .lean();
+
+      if (relatedWorker?._id) {
+        payload.workerId = relatedWorker._id;
+      }
+    }
   }
 
   await DaybookEntryModel.create(payload);
@@ -233,4 +272,22 @@ export async function addDaybookEntryAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/daybook");
   redirect(`/admin/daybook?date=${entryDateKey}&success=entry-added`);
+}
+
+export async function deleteDaybookEntryAction(formData: FormData) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const entryId = String(formData.get("entryId") ?? "").trim();
+  const entryDateKey = normalizeDateKey(String(formData.get("entryDateKey") ?? ""));
+
+  if (!entryId) {
+    redirect(`/admin/daybook?date=${entryDateKey}&error=missing-entry`);
+  }
+
+  await DaybookEntryModel.findByIdAndDelete(entryId);
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/daybook");
+  redirect(`/admin/daybook?date=${entryDateKey}&success=entry-deleted`);
 }
