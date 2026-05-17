@@ -26,12 +26,14 @@ type DaybookPageProps = {
 
 const successMessages: Record<string, string> = {
   "entry-added": "Daybook entry saved successfully.",
+  "entry-deleted": "Daybook entry deleted successfully.",
 };
 
 const errorMessages: Record<string, string> = {
   "invalid-type": "Please select a valid daybook entry type.",
   "missing-party": "Please enter the related company, worker, or person name.",
   "missing-fields": "Please complete every required field for the selected entry type.",
+  "missing-entry": "Unable to delete the selected daybook entry.",
 };
 
 export default async function DaybookPage({ searchParams }: DaybookPageProps) {
@@ -144,6 +146,7 @@ export default async function DaybookPage({ searchParams }: DaybookPageProps) {
         dateLabel={dateLabel}
         entries={entries.map((entry) => ({
           id: entry._id.toString(),
+          entryDateKey: entry.entryDateKey,
           type: entry.type,
           category: entry.category,
           partyName: entry.partyName,

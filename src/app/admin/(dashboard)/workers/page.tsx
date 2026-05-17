@@ -1,9 +1,10 @@
-import { Plus, Users } from "lucide-react";
+import { Plus, Trash2, Users } from "lucide-react";
 
-import { addWorkerAction } from "@/app/admin/actions";
+import { addWorkerAction, deleteWorkerAction } from "@/app/admin/actions";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import { WorkerModel } from "@/models/worker";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +18,12 @@ type WorkerPageProps = {
 
 const successMessages: Record<string, string> = {
   "worker-added": "Worker added successfully.",
+  "worker-deleted": "Worker deleted successfully.",
 };
 
 const errorMessages: Record<string, string> = {
   "worker-fields": "Please complete every required worker field before saving.",
+  "worker-delete-missing": "Unable to delete worker because the worker id was missing.",
 };
 
 export default async function WorkersPage({ searchParams }: WorkerPageProps) {
@@ -93,6 +96,19 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
               </label>
 
               <label className="block">
+                <span className="text-sm font-medium text-slate-200">Monthly Salary</span>
+                <input
+                  type="number"
+                  name="salary"
+                  min="0"
+                  step="0.01"
+                  required
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
+                  placeholder="12000"
+                />
+              </label>
+
+              <label className="block">
                 <span className="text-sm font-medium text-slate-200">Phone Number</span>
                 <input
                   type="tel"
@@ -155,9 +171,26 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
 
                   <div className="mt-4 space-y-2 text-sm text-slate-300">
                     <p>Joined: {formatDate(worker.joiningDate)}</p>
+                    <p>Salary: Rs. {formatNumber(worker.salary ?? 0)} / month</p>
                     <p>Phone: {worker.phoneNumber}</p>
                     <p>Photo: {worker.photoUrl ? "Added" : "Not added"}</p>
                   </div>
+
+                  <form action={deleteWorkerAction} className="mt-5">
+                    <input type="hidden" name="workerId" value={worker._id.toString()} />
+                    <input type="hidden" name="returnTo" value="/admin/workers" />
+                    <ConfirmSubmitButton
+                      label={
+                        <span className="inline-flex items-center gap-2">
+                          <Trash2 className="size-4" />
+                          Delete Worker
+                        </span>
+                      }
+                      pendingLabel="Deleting worker..."
+                      confirmMessage="Delete this worker? Their attendance records will also be removed."
+                      className="inline-flex items-center justify-center rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-70"
+                    />
+                  </form>
                 </article>
               ))}
             </div>
