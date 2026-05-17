@@ -6,7 +6,7 @@ import { AttendanceDateNavigator } from "@/components/admin-route-controls";
 import { AdminStatusToast } from "@/components/admin-toast";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
-import { formatDate, normalizeDateKey } from "@/lib/format";
+import { formatDate, formatDateLabel, normalizeDateKey } from "@/lib/format";
 import { AttendanceModel } from "@/models/attendance";
 import { WorkerModel } from "@/models/worker";
 
@@ -67,6 +67,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
 
   const successMessage = params.success ? successMessages[params.success] : null;
   const errorMessage = params.error ? errorMessages[params.error] : null;
+  const selectedDateLabel = formatDateLabel(selectedDate);
 
   return (
     <main className="mx-auto max-w-7xl">
@@ -116,18 +117,43 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
           <h1 className="text-xl font-semibold text-white">Daily Attendance Register</h1>
         </div>
 
-        <div className="mt-6 flex flex-col gap-6 rounded-3xl border border-white/8 bg-white/3 p-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl flex-1">
-            <p className="text-sm font-semibold text-white">Selected Date</p>
-            <p className="mt-1 text-sm text-slate-300">
-              Move through days smoothly, then mark attendance without any extra loading
-              button.
+        <div className="mt-6 grid gap-5 rounded-[1.75rem] border border-white/8 bg-white/3 p-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+          <div className="rounded-3xl border border-white/8 bg-slate-950/18 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-200">
+              Quick Snapshot
             </p>
-            <div className="mt-4 flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-slate-400">
-              <span>Present {totals.present}</span>
-              <span>Half Day {totals.half}</span>
-              <span>Absent {totals.absent}</span>
+            <p className="mt-3 text-lg font-semibold text-white">{selectedDateLabel}</p>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                {
+                  label: "Present",
+                  value: totals.present,
+                  tone: "border-emerald-300/16 bg-emerald-300/8 text-emerald-100",
+                },
+                {
+                  label: "Half Day",
+                  value: totals.half,
+                  tone: "border-amber-300/16 bg-amber-300/8 text-amber-100",
+                },
+                {
+                  label: "Absent",
+                  value: totals.absent,
+                  tone: "border-rose-300/16 bg-rose-300/8 text-rose-100",
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className={`rounded-3xl border px-4 py-4 ${item.tone}`}
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                    {item.label}
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold text-white">{item.value}</p>
+                </div>
+              ))}
             </div>
+
             <Link
               href="/admin/attendance-summary"
               className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-200 transition hover:text-amber-100"
@@ -136,7 +162,9 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
             </Link>
           </div>
 
-          <AttendanceDateNavigator date={selectedDate} />
+          <div className="rounded-3xl border border-white/8 bg-slate-950/18 p-5 lg:justify-self-end">
+            <AttendanceDateNavigator date={selectedDate} />
+          </div>
         </div>
 
         {workers.length === 0 ? (

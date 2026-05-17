@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Sparkles,
 } from "lucide-react";
 
 import { getCurrentMonthKey, getDateKeyFromDate, getTodayDateKey } from "@/lib/format";
@@ -64,15 +63,6 @@ export function AttendanceDateNavigator({
       }).format(new Date(`${date}T00:00:00`)),
     [date],
   );
-  const compactDate = useMemo(
-    () =>
-      new Intl.DateTimeFormat("en-IN", {
-        day: "2-digit",
-        month: "short",
-      }).format(new Date(`${date}T00:00:00`)),
-    [date],
-  );
-
   const openDatePicker = () => {
     const input = dateInputRef.current;
 
@@ -90,7 +80,7 @@ export function AttendanceDateNavigator({
   };
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-4">
+    <div className="flex w-full max-w-[420px] flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <button
           type="button"
@@ -114,28 +104,19 @@ export function AttendanceDateNavigator({
           <button
             type="button"
             onClick={openDatePicker}
-            className="group flex w-full items-center justify-between rounded-[1.75rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-5 py-4 text-left transition hover:border-amber-300/35 hover:bg-white/6"
+            className="group flex w-full items-center gap-4 rounded-3xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-4 py-4 text-left transition hover:border-amber-300/35 hover:bg-white/6"
           >
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300/12 text-amber-100">
-                <CalendarDays className="size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">
-                  Selected Date
-                </p>
-                <p className="mt-1 truncate text-base font-semibold text-white">
-                  {formattedDate}
-                </p>
-                <p className="mt-1 text-sm text-slate-400">
-                  Tap here to open the calendar and pick any day quickly.
-                </p>
-              </div>
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-300/12 text-amber-100">
+              <CalendarDays className="size-5" />
             </div>
-
-            <div className="ml-4 hidden shrink-0 items-center gap-2 rounded-full border border-white/10 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 sm:inline-flex">
-              <Sparkles className="size-3.5 text-amber-200" />
-              {compactDate}
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                Selected Date
+              </p>
+              <p className="mt-1 truncate text-base font-semibold text-white">
+                {formattedDate}
+              </p>
+              <p className="mt-1 text-sm text-slate-400">Open calendar</p>
             </div>
           </button>
         </div>
@@ -154,11 +135,10 @@ export function AttendanceDateNavigator({
         <button
           type="button"
           onClick={() => updateDate(today)}
-          className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
-            date === today
+          className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${date === today
               ? "bg-amber-300 text-slate-950"
               : "border border-white/10 bg-white/4 text-slate-200 hover:border-amber-300/35 hover:text-white"
-          }`}
+            }`}
         >
           Today
         </button>
@@ -175,7 +155,7 @@ export function AttendanceDateNavigator({
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200 transition hover:border-amber-300/35 hover:text-white"
         >
           <CalendarDays className="size-3.5 text-amber-200" />
-          Open Calendar
+          Calendar
         </button>
       </div>
 
@@ -242,11 +222,10 @@ export function AttendanceMonthNavigator({ month }: MonthNavigatorProps) {
         <button
           type="button"
           onClick={() => updateMonth(currentMonth)}
-          className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
-            month === currentMonth
+          className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${month === currentMonth
               ? "bg-amber-300 text-slate-950"
               : "border border-white/10 bg-white/4 text-slate-200 hover:border-amber-300/35 hover:text-white"
-          }`}
+            }`}
         >
           Current Month
         </button>
