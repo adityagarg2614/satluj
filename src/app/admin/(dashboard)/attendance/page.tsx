@@ -10,6 +10,7 @@ import { formatDate, formatDateLabel, normalizeDateKey } from "@/lib/format";
 import { AttendanceModel } from "@/models/attendance";
 import { WorkerModel } from "@/models/worker";
 
+
 export const dynamic = "force-dynamic";
 
 type AttendancePageProps = {
