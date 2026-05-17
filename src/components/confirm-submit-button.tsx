@@ -45,13 +45,13 @@ export function ConfirmSubmitButton({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-130 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
             onClick={() => setOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-[2rem] border border-white/12 bg-[linear-gradient(145deg,rgba(10,14,21,0.98),rgba(19,24,35,0.98))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-4xl border border-white/12 bg-[linear-gradient(145deg,rgba(10,14,21,0.98),rgba(19,24,35,0.98))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
             <div className="flex items-start gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300/12 text-amber-100">
                 <ShieldAlert className="size-6" />
