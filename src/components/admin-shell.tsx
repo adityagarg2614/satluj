@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
+  Book,
   BriefcaseBusiness,
   ChevronRight,
   LayoutDashboard,
@@ -54,15 +55,21 @@ const navItems: NavItem[] = [
         title: "Monthly Summary",
         href: "/admin/attendance-summary",
       },
-      {
-        title: "Daybook",
-        href: "/admin/daybook",
-      },
     ],
   },
+  {
+    title: "Daybook",
+    href: "/admin/daybook",
+    icon: Book,
+  },
+
 ];
 
 function getPageTitle(pathname: string) {
+  if (pathname.startsWith("/admin/workers/")) {
+    return "Worker Salary Ledger";
+  }
+
   if (pathname === "/admin/workers") {
     return "Worker Management";
   }
