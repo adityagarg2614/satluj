@@ -1,4 +1,4 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, Types, model, models } from "mongoose";
 
 export const DAYBOOK_ENTRY_TYPES = [
   "purchase",
@@ -13,6 +13,7 @@ export type DaybookEntryDocument = {
   entryDateKey: string;
   entryDate: Date;
   type: DaybookEntryType;
+  workerId?: Types.ObjectId | null;
   partyName: string;
   category: string;
   materialSource?: string;
@@ -41,6 +42,12 @@ const daybookEntrySchema = new Schema<DaybookEntryDocument>(
       type: String,
       enum: DAYBOOK_ENTRY_TYPES,
       required: true,
+      index: true,
+    },
+    workerId: {
+      type: Schema.Types.ObjectId,
+      ref: "Worker",
+      default: null,
       index: true,
     },
     partyName: {
