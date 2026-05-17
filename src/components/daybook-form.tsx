@@ -29,6 +29,7 @@ const paymentGivenCategories = [
   "Sales Customer",
   "Purchase Company",
   "Worker Salary",
+  "Worker Advance",
   "Other Person",
   "Other",
 ];
@@ -52,7 +53,11 @@ export function DaybookForm({
       return companyNames;
     }
 
-    if (entryType === "payment_given" && paymentGivenCategory === "Worker Salary") {
+    if (
+      entryType === "payment_given" &&
+      (paymentGivenCategory === "Worker Salary" ||
+        paymentGivenCategory === "Worker Advance")
+    ) {
       return workerNames;
     }
 

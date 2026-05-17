@@ -6,14 +6,18 @@ import {
   ArrowUpCircle,
   Package,
   ShoppingCart,
+  Trash2,
   Truck,
   Wallet,
 } from "lucide-react";
 
+import { deleteDaybookEntryAction } from "@/app/admin/actions";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { formatNumber } from "@/lib/format";
 
 type DaybookEntryViewItem = {
   id: string;
+  entryDateKey: string;
   type: "purchase" | "sale" | "payment_given" | "payment_received";
   category: string;
   partyName: string;
@@ -154,6 +158,22 @@ export function DaybookEntriesView({
                   {entry.note}
                 </p>
               ) : null}
+
+              <form action={deleteDaybookEntryAction} className="mt-4">
+                <input type="hidden" name="entryId" value={entry.id} />
+                <input type="hidden" name="entryDateKey" value={entry.entryDateKey} />
+                <ConfirmSubmitButton
+                  confirmMessage="Delete this daybook entry? This cannot be undone."
+                  pendingLabel="Deleting entry..."
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20"
+                  label={
+                    <span className="inline-flex items-center gap-2">
+                      <Trash2 className="size-4" />
+                      Delete Entry
+                    </span>
+                  }
+                />
+              </form>
             </article>
           ))}
         </div>
