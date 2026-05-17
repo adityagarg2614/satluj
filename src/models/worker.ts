@@ -4,6 +4,7 @@ export type WorkerDocument = {
   name: string;
   role: string;
   joiningDate: Date;
+  salary: number;
   phoneNumber: string;
   photoUrl?: string;
 };
@@ -23,6 +24,12 @@ const workerSchema = new Schema<WorkerDocument>(
     joiningDate: {
       type: Date,
       required: true,
+    },
+    salary: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
     },
     phoneNumber: {
       type: String,
