@@ -3,7 +3,7 @@ import { companyData } from "@/lib/company";
 export function SiteFooter() {
   return (
     <footer className="border-t border-white/10 bg-slate-950/90">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-7 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between lg:px-10 lg:py-8">
         <div>
           <p className="font-display text-lg text-white">{companyData.name}</p>
           <p>{companyData.tagline}</p>
