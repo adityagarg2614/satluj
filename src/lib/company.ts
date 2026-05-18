@@ -14,6 +14,8 @@ export const companyData = {
     address: "Khanak, Haryana 127040",
     email: "satluj65@gmail.com",
     mapUrl: "https://maps.app.goo.gl/tgSmPed6iVaFb5eY6",
+    mapEmbedUrl:
+      "https://maps.google.com/maps?q=Satluj%20Stones%20Crushing%20Mills%20Khanak%20Haryana&z=15&output=embed",
   },
   founder: {
     name: "Rajiv Kumar Garg",
