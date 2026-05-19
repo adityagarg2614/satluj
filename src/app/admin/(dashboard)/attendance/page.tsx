@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { saveAttendanceAction } from "@/app/admin/actions";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
+import { AttendanceManager } from "@/components/attendance-manager";
 import { AdminStatusToast } from "@/components/admin-toast";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
@@ -39,6 +40,19 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
     WorkerModel.find().sort({ createdAt: -1 }).lean(),
     AttendanceModel.find({ dateKey: selectedDate }).lean(),
   ]);
+
+  const serializedWorkers = workers.map((worker) => ({
+    _id: worker._id.toString(),
+    name: worker.name,
+    role: worker.role,
+    phoneNumber: worker.phoneNumber,
+    joiningDate: worker.joiningDate instanceof Date ? worker.joiningDate.toISOString() : new Date(worker.joiningDate).toISOString(),
+  }));
+
+  const serializedAttendance = attendance.map((record) => ({
+    workerId: record.workerId.toString(),
+    status: record.status as "present" | "half" | "absent",
+  }));
 
   const attendanceMap = new Map(
     attendance.map((record) => [record.workerId.toString(), record]),
@@ -168,7 +182,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
           </div>
         </div>
 
-        {workers.length === 0 ? (
+        {serializedWorkers.length === 0 ? (
           <div className="mt-6 rounded-3xl border border-dashed border-white/12 bg-white/3 p-6 text-sm leading-6 text-slate-300">
             No workers added yet. Go to the worker management page first.
           </div>
@@ -176,68 +190,16 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
           <form action={saveAttendanceAction} className="mt-6">
             <input type="hidden" name="date" value={selectedDate} />
 
-            <div className="space-y-4">
-              {workers.map((worker) => {
-                const record = attendanceMap.get(worker._id.toString());
-                const currentStatus = record?.status ?? "absent";
-
-                return (
-                  <div
-                    key={worker._id.toString()}
-                    className="rounded-3xl border border-white/8 bg-white/3 p-5"
-                  >
-                    <input type="hidden" name="workerIds" value={worker._id.toString()} />
-
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-300/12 text-sm font-semibold text-amber-100">
-                          {worker.name
-                            .split(" ")
-                            .map((part: string) => part[0])
-                            .slice(0, 2)
-                            .join("")}
-                        </div>
-                        <div>
-                          <p className="text-lg font-semibold text-white">{worker.name}</p>
-                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300">
-                            <span>{worker.role}</span>
-                            <span className="inline-flex items-center gap-2">
-                              <PhoneCall className="size-4 text-amber-200" />
-                              {worker.phoneNumber}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm text-slate-400">
-                            Joined {formatDate(worker.joiningDate)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="min-w-44">
-                        <label className="block">
-                          <span className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                            Attendance Status
-                          </span>
-                          <select
-                            name={`status-${worker._id.toString()}`}
-                            defaultValue={currentStatus}
-                            className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm font-medium text-white outline-none transition focus:border-amber-300/40"
-                          >
-                            <option value="present">Present</option>
-                            <option value="half">Half Day</option>
-                            <option value="absent">Absent</option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <AttendanceManager
+              workers={serializedWorkers}
+              initialAttendance={serializedAttendance}
+              selectedDate={selectedDate}
+            />
 
             <SubmitButton
               label="Save Attendance"
               pendingLabel="Saving attendance..."
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
             />
           </form>
         )}
