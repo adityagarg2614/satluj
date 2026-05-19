@@ -28,6 +28,9 @@ export async function connectToDatabase() {
     globalCache.promise = mongoose.connect(mongodbUri, {
       dbName: "satluj-stones",
       bufferCommands: false,
+      maxPoolSize: 10, // Optimizes connection pooling in Serverless/Vercel functions
+      connectTimeoutMS: 10000, // Connection failure timeout (10s)
+      socketTimeoutMS: 30000, // Idle socket timeout (30s)
     });
   }
 

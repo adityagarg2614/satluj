@@ -39,19 +39,28 @@ export default async function AttendanceSummaryPage({
   const params = await searchParams;
   const selectedMonth = normalizeMonthKey(params.month);
 
-  const [workers, monthlyAttendance, allAttendance, paymentEntries] = await Promise.all([
-    WorkerModel.find().sort({ createdAt: -1 }).lean(),
+  const workers = await WorkerModel.find().sort({ createdAt: -1 }).lean();
+  const workerIds = workers.map((w) => w._id);
+  const workerNames = workers.map((w) => w.name);
+
+  const [monthlyAttendance, allAttendance, paymentEntries] = await Promise.all([
     AttendanceModel.find({
       dateKey: {
         $regex: `^${selectedMonth}`,
       },
     }).lean(),
-    AttendanceModel.find().lean(),
+    AttendanceModel.find({
+      workerId: { $in: workerIds },
+    }).lean(),
     DaybookEntryModel.find({
       type: "payment_given",
       category: {
         $in: [...WORKER_PAYMENT_CATEGORIES],
       },
+      $or: [
+        { workerId: { $in: workerIds } },
+        { partyName: { $in: workerNames } },
+      ],
     }).lean(),
   ]);
 
