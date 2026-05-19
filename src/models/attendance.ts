@@ -45,6 +45,7 @@ const attendanceSchema = new Schema<AttendanceDocument>(
 );
 
 attendanceSchema.index({ workerId: 1, dateKey: 1 }, { unique: true });
+attendanceSchema.index({ dateKey: 1 });
 
 export const AttendanceModel =
   models.Attendance || model<AttendanceDocument>("Attendance", attendanceSchema);
