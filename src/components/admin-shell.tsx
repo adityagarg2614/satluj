@@ -59,10 +59,18 @@ const navItems: NavItem[] = [
   },
   {
     title: "Daybook",
-    href: "/admin/daybook",
     icon: Book,
+    children: [
+      {
+        title: "Record Entry",
+        href: "/admin/daybook",
+      },
+      {
+        title: "View Records",
+        href: "/admin/daybook-records",
+      },
+    ],
   },
-
 ];
 
 function getPageTitle(pathname: string) {
@@ -83,7 +91,11 @@ function getPageTitle(pathname: string) {
   }
 
   if (pathname === "/admin/daybook") {
-    return "Daybook";
+    return "Daybook Record Entry";
+  }
+
+  if (pathname === "/admin/daybook-records") {
+    return "Daybook Records View";
   }
 
   return "Admin Dashboard";
@@ -93,15 +105,27 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const managementActive = useMemo(
-    () =>
-      pathname.startsWith("/admin/workers") ||
-      pathname.startsWith("/admin/attendance"),
-    [pathname],
-  );
-  const [managementOpen, setManagementOpen] = useState(managementActive);
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navItems.forEach((item) => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(
+          (child) => pathname === child.href || (child.href === "/admin/workers" && pathname.startsWith("/admin/workers/"))
+        );
+        if (hasActiveChild) {
+          initial[item.title] = true;
+        }
+      }
+    });
+    return initial;
+  });
 
-  const isManagementOpen = managementActive || managementOpen;
+  const toggleDropdown = (title: string) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
 
   const sidebar = (
     <aside className="flex h-full w-[290px] flex-col border-r border-white/10 bg-[rgba(7,11,17,0.96)] backdrop-blur-2xl">
@@ -126,7 +150,11 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
           <nav className="mt-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = item.href ? pathname === item.href : managementActive;
+              const hasActiveChild = item.children?.some(
+                (child) => pathname === child.href || (child.href === "/admin/workers" && pathname.startsWith("/admin/workers/"))
+              );
+              const isActive = item.href ? pathname === item.href : hasActiveChild;
+              const isOpen = !!openDropdowns[item.title];
 
               if (!item.children?.length) {
                 return (
@@ -149,7 +177,7 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
                 <div key={item.title} className="rounded-2xl">
                   <button
                     type="button"
-                    onClick={() => setManagementOpen((current) => !current)}
+                    onClick={() => toggleDropdown(item.title)}
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition ${isActive
                       ? "bg-white/8 text-white"
                       : "text-slate-300 hover:bg-white/5 hover:text-white"
@@ -158,15 +186,15 @@ export function AdminShell({ adminName, children }: AdminShellProps) {
                     <Icon className="size-4" />
                     <span>{item.title}</span>
                     <ChevronRight
-                      className={`ml-auto size-4 transition-transform ${isManagementOpen ? "rotate-90" : ""
+                      className={`ml-auto size-4 transition-transform ${isOpen ? "rotate-90" : ""
                         }`}
                     />
                   </button>
 
-                  {isManagementOpen ? (
+                  {isOpen ? (
                     <div className="mt-2 space-y-1 border-l border-white/10 pl-5">
                       {item.children.map((child) => {
-                        const childActive = pathname === child.href;
+                        const childActive = pathname === child.href || (child.href === "/admin/workers" && pathname.startsWith("/admin/workers/"));
 
                         return (
                           <Link
