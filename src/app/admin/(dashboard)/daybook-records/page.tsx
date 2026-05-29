@@ -1,10 +1,8 @@
 import {
   ArrowDownCircle,
   ArrowUpCircle,
-  Scale,
   ShoppingCart,
   Truck,
-  Wallet,
 } from "lucide-react";
 
 import { AdminStatusToast } from "@/components/admin-toast";
