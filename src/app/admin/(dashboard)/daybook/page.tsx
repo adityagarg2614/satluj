@@ -11,6 +11,7 @@ import { DaybookForm } from "@/components/daybook-form";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
 import { connectToDatabase } from "@/lib/db";
 import { formatDateLabel, normalizeDateKey } from "@/lib/format";
+import { resolveWorkerType, sortWorkersForAdmin } from "@/lib/worker-utils";
 import { CompanyModel } from "@/models/company";
 import { DaybookEntryModel } from "@/models/daybook-entry";
 import { WorkerModel } from "@/models/worker";
@@ -46,8 +47,9 @@ export default async function DaybookPage({ searchParams }: DaybookPageProps) {
   const [entries, companies, workers] = await Promise.all([
     DaybookEntryModel.find({ entryDateKey: selectedDate }).sort({ createdAt: -1 }).lean(),
     CompanyModel.find().sort({ name: 1 }).lean(),
-    WorkerModel.find().sort({ name: 1 }).lean(),
+    WorkerModel.find().lean(),
   ]);
+  const sortedWorkers = sortWorkersForAdmin(workers);
 
   const typeTotals = entries.reduce(
     (acc, entry) => {
@@ -129,7 +131,12 @@ export default async function DaybookPage({ searchParams }: DaybookPageProps) {
         <DaybookForm
           selectedDate={selectedDate}
           companyNames={companies.map((company) => company.name)}
-          workerNames={workers.map((worker) => worker.name)}
+          permanentWorkerNames={sortedWorkers
+            .filter((worker) => resolveWorkerType(worker) === "permanent")
+            .map((worker) => worker.name)}
+          dihadiWorkerNames={sortedWorkers
+            .filter((worker) => resolveWorkerType(worker) === "dihadi")
+            .map((worker) => worker.name)}
         />
       </section>
 
