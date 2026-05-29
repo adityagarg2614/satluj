@@ -5,6 +5,7 @@ import { buildMonthlyAttendanceSummary } from "@/lib/attendance-summary";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatMonthLabel, getCurrentMonthKey } from "@/lib/format";
 import {
+  getWorkerTypeBadgeLabel,
   getWorkerRoleLabel,
   hasDisplayPhoneNumber,
   resolveWorkerType,
@@ -146,7 +147,7 @@ export default async function AdminDashboardHomePage() {
                       </p>
                     </div>
                     <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
-                      {resolveWorkerType(worker) === "dihadi" ? "Dihadi" : "Permanent"}
+                      {getWorkerTypeBadgeLabel(resolveWorkerType(worker))}
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-slate-300">

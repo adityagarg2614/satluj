@@ -23,6 +23,7 @@ import {
   getWorkerRoleLabel,
   hasDisplayPhoneNumber,
   resolveWorkerType,
+  DAILY_WAGE_RECORDS_LABEL,
 } from "@/lib/worker-utils";
 import { AttendanceModel } from "@/models/attendance";
 import { DaybookEntryModel } from "@/models/daybook-entry";
@@ -192,16 +193,16 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
               className="inline-flex items-center gap-2 text-sm font-semibold text-amber-200 transition hover:text-amber-100"
             >
               <ArrowLeft className="size-4" />
-              Back to {workerType === "dihadi" ? "dihadi records" : "monthly summary"}
+              Back to {workerType === "dihadi" ? DAILY_WAGE_RECORDS_LABEL.toLowerCase() : "monthly summary"}
             </Link>
 
             <p className="mt-5 text-xs uppercase tracking-[0.32em] text-amber-200">
-              {workerType === "dihadi" ? "Dihadi Payment Record" : "Worker Salary Record"}
+              {workerType === "dihadi" ? "Daily Wage Payment Record" : "Worker Salary Record"}
             </p>
             <h1 className="mt-4 font-display text-5xl text-white">{ledgerWorker.name}</h1>
             <p className="mt-4 text-lg leading-8 text-slate-300">
               {workerType === "dihadi"
-                ? "Daily-rate earnings, worked days, and paid salary stay together here for a clear dihadi record."
+                ? "Daily-rate earnings, worked days, and paid payments stay together here for a clear daily wage record."
                 : "Salary, attendance-earned amount, and payment history for this worker stay together here so admin can review the full record clearly."}
             </p>
 
@@ -282,6 +283,7 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
             <div>
               <h2 className="text-xl font-semibold text-white">
                 {workerType === "dihadi" ? "Month-by-Month Dihadi View" : "Month-by-Month Salary View"}
+                
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Earned amount updates automatically from attendance. Payments reduce the

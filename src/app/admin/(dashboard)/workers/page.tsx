@@ -11,6 +11,8 @@ import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatNumber } from "@/lib/format";
 import {
+  DAILY_WAGE_RECORDS_LABEL,
+  getWorkerTypeBadgeLabel,
   groupDihadiWorkersByName,
   getWorkerRoleLabel,
   resolveWorkerType,
@@ -107,7 +109,7 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
                   salaryLabel: "Monthly Salary",
                 },
                 {
-                  title: "Dihadi Workers",
+                  title: "Daily Wage Workers",
                   workers: dihadiWorkers,
                   salaryLabel: "Daily Rate",
                 },
@@ -143,7 +145,7 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
                                 </p>
                               </div>
                               <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
-                                {isDihadi ? "Dihadi" : "Permanent"}
+                                {getWorkerTypeBadgeLabel(workerType)}
                               </span>
                             </div>
 

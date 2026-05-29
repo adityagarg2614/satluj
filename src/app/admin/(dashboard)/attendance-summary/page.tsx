@@ -7,7 +7,11 @@ import { buildMonthlyAttendanceSummary } from "@/lib/attendance-summary";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatMonthLabel, formatNumber, normalizeMonthKey } from "@/lib/format";
 import { buildWorkerSalaryLedger, WORKER_PAYMENT_CATEGORIES } from "@/lib/salary";
-import { resolveWorkerType, sortWorkersForAdmin } from "@/lib/worker-utils";
+import {
+  DAILY_WAGE_RECORDS_LABEL,
+  resolveWorkerType,
+  sortWorkersForAdmin,
+} from "@/lib/worker-utils";
 import { AttendanceModel } from "@/models/attendance";
 import { DaybookEntryModel } from "@/models/daybook-entry";
 import { WorkerModel } from "@/models/worker";
@@ -131,7 +135,7 @@ export default async function AttendanceSummaryPage({
               href={`/admin/dihadi-records?month=${selectedMonth}`}
               className="inline-flex items-center justify-center rounded-3xl border border-white/10 bg-white/3 px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-300/35 hover:text-amber-200"
             >
-              View Dihadi Records
+              View {DAILY_WAGE_RECORDS_LABEL}
             </Link>
           </div>
         </div>

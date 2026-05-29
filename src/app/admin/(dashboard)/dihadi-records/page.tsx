@@ -6,6 +6,7 @@ import { buildWorkerSalaryLedger, DIHADI_PAYMENT_CATEGORIES } from "@/lib/salary
 import { connectToDatabase } from "@/lib/db";
 import { formatMonthLabel, formatNumber, normalizeMonthKey } from "@/lib/format";
 import {
+  DAILY_WAGE_RECORDS_LABEL,
   groupDihadiWorkersByName,
   hasDisplayPhoneNumber,
   normalizeWorkerIdentityName,
@@ -257,13 +258,13 @@ export default async function DihadiRecordsPage({
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.32em] text-amber-200">
-              Dihadi Records
+              {DAILY_WAGE_RECORDS_LABEL}
             </p>
             <h1 className="mt-5 font-display text-5xl text-white">
               Daily-basis worker attendance and payout view.
             </h1>
             <p className="mt-4 text-lg leading-8 text-slate-300">
-              Review all dihadi workers separately from permanent staff, including days
+              Review all daily wage workers separately from permanent staff, including days
               worked, daily rate, earned amount, and salary paid through the daybook.
             </p>
           </div>
@@ -307,11 +308,11 @@ export default async function DihadiRecordsPage({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-white">
-              {formatMonthLabel(selectedMonth)} Dihadi Table
+              {formatMonthLabel(selectedMonth)} Daily Wage Table
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-300">
               This table shows only daily-basis workers. It tracks actual days worked and
-              payments entered in the daybook. Duplicate same-name dihadi entries are
+              payments entered in the daybook. Duplicate same-name daily wage entries are
               merged into one record automatically.
             </p>
           </div>
@@ -319,7 +320,7 @@ export default async function DihadiRecordsPage({
 
         {canonicalWorkers.length === 0 ? (
           <div className="mt-6 rounded-3xl border border-dashed border-white/12 bg-white/3 p-6 text-sm leading-6 text-slate-300">
-            No dihadi workers have been saved yet.
+            No daily wage workers have been saved yet.
           </div>
         ) : (
           <div className="mt-6 overflow-hidden rounded-3xl border border-white/8 bg-white/3">
