@@ -10,6 +10,7 @@ import { DaybookEntriesView } from "@/components/daybook-entries-view";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
 import { connectToDatabase } from "@/lib/db";
 import { formatDateLabel, formatNumber, normalizeDateKey } from "@/lib/format";
+import { WEIGHT_UNIT_LABEL } from "@/lib/recovered-metal";
 import { DaybookEntryModel } from "@/models/daybook-entry";
 
 export const dynamic = "force-dynamic";
@@ -88,7 +89,7 @@ export default async function DaybookRecordsPage({ searchParams }: DaybookRecord
       label: "Material Purchases",
       badge: `${totals.purchaseCount} records`,
       value: `Rs. ${formatNumber(totals.purchaseAmount)}`,
-      detail: `${formatNumber(totals.purchaseWeight)} tons loaded`,
+      detail: `${formatNumber(totals.purchaseWeight)} ${WEIGHT_UNIT_LABEL} loaded`,
       theme: "border-emerald-500/20 bg-emerald-500/5 text-emerald-200",
     },
     {
@@ -96,7 +97,7 @@ export default async function DaybookRecordsPage({ searchParams }: DaybookRecord
       label: "Material Sales",
       badge: `${totals.saleCount} records`,
       value: `Rs. ${formatNumber(totals.saleAmount)}`,
-      detail: `${formatNumber(totals.saleWeight)} tons dispatched`,
+      detail: `${formatNumber(totals.saleWeight)} ${WEIGHT_UNIT_LABEL} dispatched`,
       theme: "border-indigo-500/20 bg-indigo-500/5 text-indigo-200",
     },
     {

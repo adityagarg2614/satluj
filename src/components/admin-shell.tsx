@@ -10,6 +10,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   Menu,
+  Scale,
   ShieldCheck,
   Sparkles,
   X,
@@ -76,6 +77,11 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  {
+    title: "Revert Scrap",
+    href: "/admin/revert-scrap",
+    icon: Scale,
+  },
 ];
 
 function getPageTitle(pathname: string) {
@@ -109,6 +115,10 @@ function getPageTitle(pathname: string) {
 
   if (pathname === "/admin/daybook-records") {
     return "Daybook Records View";
+  }
+
+  if (pathname === "/admin/revert-scrap") {
+    return "Revert Scrap Tracking";
   }
 
   return "Admin Dashboard";

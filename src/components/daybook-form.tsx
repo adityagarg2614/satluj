@@ -12,6 +12,7 @@ import {
 import { addDaybookEntryAction } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { DAILY_WAGE_PAYMENT_CATEGORY } from "@/lib/salary";
+import { WEIGHT_UNIT_LABEL } from "@/lib/recovered-metal";
 
 type DaybookFormProps = {
   selectedDate: string;
@@ -420,7 +421,10 @@ function TransportFields() {
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium text-slate-200">Material Weight</span>
+          <span className="text-sm font-medium text-slate-200">
+            Material Weight ({WEIGHT_UNIT_LABEL})
+          </span>
+          
           <input
             type="number"
             name="weight"
@@ -428,7 +432,7 @@ function TransportFields() {
             step="0.01"
             required
             className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-            placeholder="Enter weight"
+            placeholder={`Enter weight in ${WEIGHT_UNIT_LABEL}`}
           />
         </label>
       </div>

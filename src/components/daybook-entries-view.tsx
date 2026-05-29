@@ -14,6 +14,7 @@ import {
 import { deleteDaybookEntryAction } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { formatNumber } from "@/lib/format";
+import { WEIGHT_UNIT_LABEL } from "@/lib/recovered-metal";
 import { getWorkerPaymentCategoryLabel } from "@/lib/salary";
 
 type DaybookEntryViewItem = {
@@ -141,7 +142,9 @@ export function DaybookEntriesView({
                     {entry.driverName ? <span>Driver: {entry.driverName}</span> : null}
                     {entry.driverPhone ? <span>Phone: {entry.driverPhone}</span> : null}
                     {typeof entry.weight === "number" ? (
-                      <span>Weight: {formatNumber(entry.weight)}</span>
+                      <span>
+                        Weight: {formatNumber(entry.weight)} {WEIGHT_UNIT_LABEL}
+                      </span>
                     ) : null}
                     {typeof entry.amount === "number" ? (
                       <span>Amount: Rs. {formatNumber(entry.amount)}</span>
