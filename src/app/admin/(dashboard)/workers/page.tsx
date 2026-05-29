@@ -1,15 +1,20 @@
 import { Plus, Trash2, Users } from "lucide-react";
 
 import {
-  addWorkerAction,
   deleteWorkerAction,
   updateWorkerSalaryAction,
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { AdminStatusToast } from "@/components/admin-toast";
+import { WorkerForm } from "@/components/worker-form";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatNumber } from "@/lib/format";
+import {
+  getWorkerRoleLabel,
+  resolveWorkerType,
+  sortWorkersForAdmin,
+} from "@/lib/worker-utils";
 import { WorkerModel } from "@/models/worker";
 
 export const dynamic = "force-dynamic";
@@ -38,11 +43,18 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
 
   const [params, workers] = await Promise.all([
     searchParams,
-    WorkerModel.find().sort({ createdAt: -1 }).lean(),
+    WorkerModel.find().lean(),
   ]);
 
   const successMessage = params.success ? successMessages[params.success] : null;
   const errorMessage = params.error ? errorMessages[params.error] : null;
+  const sortedWorkers = sortWorkersForAdmin(workers);
+  const permanentWorkers = sortedWorkers.filter(
+    (worker) => resolveWorkerType(worker) === "permanent",
+  );
+  const dihadiWorkers = sortedWorkers.filter(
+    (worker) => resolveWorkerType(worker) === "dihadi",
+  );
 
   return (
     <main className="mx-auto max-w-7xl">
@@ -59,80 +71,7 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
             Save each worker once so the attendance system can use the same roster daily.
           </p>
 
-          <form action={addWorkerAction} className="mt-6 grid gap-4">
-            <label className="block">
-              <span className="text-sm font-medium text-slate-200">Worker Name</span>
-              <input
-                type="text"
-                name="name"
-                required
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                placeholder="Enter worker name"
-              />
-            </label>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-medium text-slate-200">Role</span>
-                <input
-                  type="text"
-                  name="role"
-                  required
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                  placeholder="Crusher operator, helper, loader..."
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium text-slate-200">Joining Date</span>
-                <input
-                  type="date"
-                  name="joiningDate"
-                  required
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-slate-200">Monthly Salary</span>
-                <input
-                  type="number"
-                  name="salary"
-                  min="0"
-                  step="0.01"
-                  required
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                  placeholder="12000"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-slate-200">Phone Number</span>
-                <input
-                  type="tel"
-                  name="phoneNumber"
-                  required
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                  placeholder="+91-98XXXXXXXX"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-sm font-medium text-slate-200">Photo URL (optional)</span>
-              <input
-                type="url"
-                name="photoUrl"
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                placeholder="https://example.com/photo.jpg"
-              />
-            </label>
-
-            <SubmitButton
-              label="Save Worker"
-              pendingLabel="Saving worker..."
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
-            />
-          </form>
+          <WorkerForm />
         </div>
 
         <div className="glass-panel rounded-4xl p-7">
@@ -150,64 +89,113 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
               No workers in the database yet.
             </div>
           ) : (
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {workers.map((worker) => (
-                <article
-                  key={worker._id.toString()}
-                  className="rounded-3xl border border-white/8 bg-white/3 p-5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-lg font-semibold text-white">{worker.name}</p>
-                      <p className="mt-1 text-sm text-amber-200">{worker.role}</p>
+            <div className="mt-6 space-y-8">
+              {[
+                {
+                  title: "Permanent Workers",
+                  workers: permanentWorkers,
+                  salaryLabel: "Monthly Salary",
+                },
+                {
+                  title: "Dihadi Workers",
+                  workers: dihadiWorkers,
+                  salaryLabel: "Daily Rate",
+                },
+              ].map((section) =>
+                section.workers.length > 0 ? (
+                  <div key={section.title}>
+                    <div className="flex items-center justify-between gap-4">
+                      <h3 className="text-lg font-semibold text-white">{section.title}</h3>
+                      <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
+                        {section.workers.length} workers
+                      </span>
                     </div>
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
-                      Worker
-                    </span>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      {section.workers.map((worker) => {
+                        const workerType = resolveWorkerType(worker);
+                        const isDihadi = workerType === "dihadi";
+
+                        return (
+                          <article
+                            key={worker._id.toString()}
+                            className="rounded-3xl border border-white/8 bg-white/3 p-5"
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="text-lg font-semibold text-white">{worker.name}</p>
+                                <p className="mt-1 text-sm text-amber-200">
+                                  {getWorkerRoleLabel(worker)}
+                                </p>
+                              </div>
+                              <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
+                                {isDihadi ? "Dihadi" : "Permanent"}
+                              </span>
+                            </div>
+
+                            <div className="mt-4 space-y-2 text-sm text-slate-300">
+                              {!isDihadi ? <p>Joined: {formatDate(worker.joiningDate)}</p> : null}
+                              <p>
+                                {section.salaryLabel}: Rs. {formatNumber(worker.salary ?? 0)}
+                                {isDihadi ? " / day" : " / month"}
+                              </p>
+                              {!isDihadi && worker.phoneNumber ? (
+                                <p>Phone: {worker.phoneNumber}</p>
+                              ) : null}
+                              <p>Photo: {worker.photoUrl ? "Added" : "Not added"}</p>
+                            </div>
+
+                            <form
+                              action={updateWorkerSalaryAction}
+                              className="mt-5 flex flex-col gap-3 sm:flex-row"
+                            >
+                              <input
+                                type="hidden"
+                                name="workerId"
+                                value={worker._id.toString()}
+                              />
+                              <input type="hidden" name="returnTo" value="/admin/workers" />
+                              <input
+                                type="number"
+                                name="salary"
+                                min="0"
+                                step="0.01"
+                                defaultValue={worker.salary ?? 0}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300/40"
+                              />
+                              <SubmitButton
+                                label={isDihadi ? "Update Daily Rate" : "Update Salary"}
+                                pendingLabel="Updating..."
+                                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-300/30 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+                              />
+                            </form>
+
+                            <form action={deleteWorkerAction} className="mt-5">
+                              <input
+                                type="hidden"
+                                name="workerId"
+                                value={worker._id.toString()}
+                              />
+                              <input type="hidden" name="returnTo" value="/admin/workers" />
+                              <ConfirmSubmitButton
+                                label={
+                                  <span className="inline-flex items-center gap-2">
+                                    <Trash2 className="size-4" />
+                                    Delete Worker
+                                  </span>
+                                }
+                                pendingLabel="Deleting worker..."
+                                confirmMessage="Delete this worker? Their attendance records will also be removed."
+                                className="inline-flex items-center justify-center rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-70"
+                              />
+                            </form>
+                          </article>
+                        );
+                      })}
+                    </div>
                   </div>
-
-                  <div className="mt-4 space-y-2 text-sm text-slate-300">
-                    <p>Joined: {formatDate(worker.joiningDate)}</p>
-                    <p>Salary: Rs. {formatNumber(worker.salary ?? 0)} / month</p>
-                    <p>Phone: {worker.phoneNumber}</p>
-                    <p>Photo: {worker.photoUrl ? "Added" : "Not added"}</p>
-                  </div>
-
-                  <form action={updateWorkerSalaryAction} className="mt-5 flex flex-col gap-3 sm:flex-row">
-                    <input type="hidden" name="workerId" value={worker._id.toString()} />
-                    <input type="hidden" name="returnTo" value="/admin/workers" />
-                    <input
-                      type="number"
-                      name="salary"
-                      min="0"
-                      step="0.01"
-                      defaultValue={worker.salary ?? 0}
-                      className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300/40"
-                    />
-                    <SubmitButton
-                      label="Update Salary"
-                      pendingLabel="Updating..."
-                      className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/4 px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-300/30 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
-                    />
-                  </form>
-
-                  <form action={deleteWorkerAction} className="mt-5">
-                    <input type="hidden" name="workerId" value={worker._id.toString()} />
-                    <input type="hidden" name="returnTo" value="/admin/workers" />
-                    <ConfirmSubmitButton
-                      label={
-                        <span className="inline-flex items-center gap-2">
-                          <Trash2 className="size-4" />
-                          Delete Worker
-                        </span>
-                      }
-                      pendingLabel="Deleting worker..."
-                      confirmMessage="Delete this worker? Their attendance records will also be removed."
-                      className="inline-flex items-center justify-center rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-70"
-                    />
-                  </form>
-                </article>
-              ))}
+                ) : null,
+              )}
             </div>
           )}
         </div>
