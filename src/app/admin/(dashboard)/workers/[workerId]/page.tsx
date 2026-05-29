@@ -16,6 +16,7 @@ import { formatDate, formatNumber } from "@/lib/format";
 import {
   buildWorkerSalaryLedger,
   DIHADI_PAYMENT_CATEGORIES,
+  getWorkerPaymentCategoryLabel,
   PERMANENT_PAYMENT_CATEGORIES,
 } from "@/lib/salary";
 import {
@@ -282,8 +283,7 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-white">
-                {workerType === "dihadi" ? "Month-by-Month Dihadi View" : "Month-by-Month Salary View"}
-                
+                {workerType === "dihadi" ? "Month-by-Month Daily Wage View" : "Month-by-Month Salary View"}
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-300">
                 Earned amount updates automatically from attendance. Payments reduce the
@@ -368,7 +368,7 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-amber-100">
-                          {payment.category}
+                          {getWorkerPaymentCategoryLabel(payment.category)}
                         </span>
                       </div>
                       <p className="mt-3 text-lg font-semibold text-white">
