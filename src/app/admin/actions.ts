@@ -294,6 +294,58 @@ export async function saveAttendanceAction(formData: FormData) {
   redirect(`/admin/attendance?date=${dateKey}&success=attendance-saved`);
 }
 
+export async function updateWorkerAttendanceDayAction(input: {
+  workerId: string;
+  dateKey: string;
+  status: AttendanceStatus;
+}) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const workerId = String(input.workerId ?? "").trim();
+  const dateKey = normalizeDateKey(String(input.dateKey ?? ""));
+  const statusValue = String(input.status ?? "absent");
+  const status = ATTENDANCE_STATUSES.includes(statusValue as AttendanceStatus)
+    ? (statusValue as AttendanceStatus)
+    : null;
+
+  if (!workerId || !status) {
+    return {
+      ok: false,
+      message: "Unable to update attendance for this day.",
+    };
+  }
+
+  await AttendanceModel.findOneAndUpdate(
+    { workerId, dateKey },
+    {
+      workerId,
+      dateKey,
+      date: new Date(`${dateKey}T00:00:00.000Z`),
+      status,
+      dayValue: getStatusDayValue(status),
+    },
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    },
+  );
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/attendance");
+  revalidatePath("/admin/attendance-summary");
+  revalidatePath(`/admin/workers/${workerId}`);
+  revalidatePath(`/admin/workers/${workerId}/attendance`);
+
+  return {
+    ok: true,
+    message: `Attendance updated to ${
+      status === "present" ? "Present" : status === "half" ? "Half Day" : "Absent"
+    }.`,
+  };
+}
+
 function normalizeCompanyName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }

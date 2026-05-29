@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Trash2 } from "lucide-react";
+import { ArrowRight, CalendarRange } from "lucide-react";
 
-import { deleteWorkerAction } from "@/app/admin/actions";
 import { AttendanceMonthNavigator } from "@/components/admin-route-controls";
 import { AdminStatusToast } from "@/components/admin-toast";
-import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { buildMonthlyAttendanceSummary } from "@/lib/attendance-summary";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatMonthLabel, formatNumber, normalizeMonthKey } from "@/lib/format";
@@ -25,11 +23,9 @@ type AttendanceSummaryPageProps = {
 };
 
 const successMessages: Record<string, string> = {
-  "worker-deleted": "Worker deleted successfully.",
 };
 
 const errorMessages: Record<string, string> = {
-  "worker-delete-missing": "Unable to delete worker because the worker id was missing.",
 };
 
 export default async function AttendanceSummaryPage({
@@ -201,25 +197,13 @@ export default async function AttendanceSummaryPage({
                             <ArrowRight className="size-4" />
                           </Link>
 
-                          <form action={deleteWorkerAction}>
-                            <input type="hidden" name="workerId" value={worker.workerId} />
-                            <input
-                              type="hidden"
-                              name="returnTo"
-                              value={`/admin/attendance-summary?month=${selectedMonth}`}
-                            />
-                            <ConfirmSubmitButton
-                              label={
-                                <span className="inline-flex items-center gap-2">
-                                  <Trash2 className="size-4" />
-                                  Delete
-                                </span>
-                              }
-                              pendingLabel="Deleting..."
-                              confirmMessage="Delete this worker? Their attendance records will also be removed."
-                              className="inline-flex items-center justify-center rounded-full border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-70"
-                            />
-                          </form>
+                          <Link
+                            href={`/admin/workers/${worker.workerId}/attendance?month=${selectedMonth}`}
+                            className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:border-amber-300/35 hover:bg-amber-300/16"
+                          >
+                            See Attendance
+                            <CalendarRange className="size-4" />
+                          </Link>
                         </div>
                       </td>
                     </tr>

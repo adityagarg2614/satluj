@@ -78,6 +78,10 @@ const navItems: NavItem[] = [
 ];
 
 function getPageTitle(pathname: string) {
+  if (pathname.startsWith("/admin/workers/") && pathname.endsWith("/attendance")) {
+    return "Worker Monthly Attendance";
+  }
+
   if (pathname.startsWith("/admin/workers/")) {
     return "Worker Salary Ledger";
   }

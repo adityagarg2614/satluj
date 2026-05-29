@@ -19,6 +19,7 @@ type DateNavigatorProps = {
 
 type MonthNavigatorProps = {
   month: string;
+  basePath?: string;
 };
 
 function shiftDate(dateKey: string, amount: number) {
@@ -169,7 +170,10 @@ export function AttendanceDateNavigator({
   );
 }
 
-export function AttendanceMonthNavigator({ month }: MonthNavigatorProps) {
+export function AttendanceMonthNavigator({
+  month,
+  basePath = "/admin/attendance-summary",
+}: MonthNavigatorProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -179,7 +183,7 @@ export function AttendanceMonthNavigator({ month }: MonthNavigatorProps) {
     params.set("month", nextMonth);
 
     startTransition(() => {
-      router.replace(`/admin/attendance-summary?${params.toString()}`, { scroll: false });
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
     });
   };
 
