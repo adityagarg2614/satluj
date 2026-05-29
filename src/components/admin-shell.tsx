@@ -17,6 +17,7 @@ import {
 
 import { logoutAction } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/submit-button";
+import { DAILY_WAGE_RECORDS_LABEL } from "@/lib/worker-utils";
 
 type AdminShellProps = {
   adminName: string;
@@ -56,7 +57,7 @@ const navItems: NavItem[] = [
         href: "/admin/attendance-summary",
       },
       {
-        title: "Dihadi Records",
+        title: DAILY_WAGE_RECORDS_LABEL,
         href: "/admin/dihadi-records",
       },
     ],
@@ -99,7 +100,7 @@ function getPageTitle(pathname: string) {
   }
 
   if (pathname === "/admin/dihadi-records") {
-    return "Dihadi Records";
+    return DAILY_WAGE_RECORDS_LABEL;
   }
 
   if (pathname === "/admin/daybook") {

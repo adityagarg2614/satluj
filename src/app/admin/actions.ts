@@ -81,7 +81,7 @@ export async function addWorkerAction(formData: FormData) {
   const salary = Number(formData.get("salary") ?? 0);
   const phoneNumber = String(formData.get("phoneNumber") ?? "").trim();
   const photoUrl = String(formData.get("photoUrl") ?? "").trim();
-  const finalRole = workerType === "dihadi" ? "Dihadi" : role;
+  const finalRole = workerType === "dihadi" ? "Daily Wage" : role;
   const finalJoiningDate = joiningDate || new Date().toISOString().slice(0, 10);
   const finalPhoneNumber =
     workerType === "dihadi" ? DIHADI_PHONE_PLACEHOLDER : phoneNumber;
@@ -131,7 +131,7 @@ export async function addDihadiWorkerForDayAction(formData: FormData) {
     existingWorker ??
     (await WorkerModel.create({
       name,
-      role: "Dihadi",
+      role: "Daily Wage",
       workerType: "dihadi",
       joiningDate: new Date(`${dateKey}T00:00:00.000Z`),
       salary,
@@ -141,7 +141,7 @@ export async function addDihadiWorkerForDayAction(formData: FormData) {
 
   if (existingWorker) {
     existingWorker.workerType = "dihadi";
-    existingWorker.role = existingWorker.role?.trim() || "Dihadi";
+    existingWorker.role = existingWorker.role?.trim() || "Daily Wage";
     existingWorker.salary = salary;
     existingWorker.phoneNumber =
       existingWorker.phoneNumber?.trim() || DIHADI_PHONE_PLACEHOLDER;

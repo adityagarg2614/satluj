@@ -1,5 +1,9 @@
 import type { WorkerType } from "@/models/worker";
 
+export const DAILY_WAGE_WORKER_LABEL = "Daily Wage Worker";
+export const DAILY_WAGE_RECORDS_LABEL = "Daily Wage Records";
+export const DAILY_WAGE_SHORT_LABEL = "Daily Wage";
+
 type WorkerLike = {
   _id?: {
     toString(): string;
@@ -25,6 +29,7 @@ const ROLE_PRIORITY = new Map<string, number>([
   ["driver", 4],
   ["operator", 5],
   ["helper", 6],
+  ["daily wage", 99],
   ["dihadi", 99],
 ]);
 
@@ -41,15 +46,25 @@ export function resolveWorkerType(worker: WorkerLike): WorkerType {
     return worker.workerType;
   }
 
-  return normalizeText(worker.role) === "dihadi" ? "dihadi" : "permanent";
+  const normalizedRole = normalizeText(worker.role);
+  return normalizedRole === "dihadi" || normalizedRole === "daily wage"
+    ? "dihadi"
+    : "permanent";
 }
 
 export function getWorkerRoleLabel(worker: WorkerLike) {
-  if (resolveWorkerType(worker) === "dihadi" && normalizeText(worker.role) === "dihadi") {
-    return "Dihadi Worker";
+  if (
+    resolveWorkerType(worker) === "dihadi" &&
+    ["dihadi", "daily wage"].includes(normalizeText(worker.role))
+  ) {
+    return DAILY_WAGE_WORKER_LABEL;
   }
 
   return worker.role?.trim() || "Worker";
+}
+
+export function getWorkerTypeBadgeLabel(workerType: WorkerType) {
+  return workerType === "dihadi" ? DAILY_WAGE_SHORT_LABEL : "Permanent";
 }
 
 export function hasDisplayPhoneNumber(phoneNumber: string | null | undefined) {

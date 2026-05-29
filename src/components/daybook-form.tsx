@@ -11,6 +11,7 @@ import {
 
 import { addDaybookEntryAction } from "@/app/admin/actions";
 import { SubmitButton } from "@/components/submit-button";
+import { DAILY_WAGE_PAYMENT_CATEGORY } from "@/lib/salary";
 
 type DaybookFormProps = {
   selectedDate: string;
@@ -29,7 +30,7 @@ const saleMaterialOptions = ["Granulated Slag Sand", "Revert Scrap Metal"];
 const paymentGivenCategories = [
   "Purchase Company",
   "Worker Salary",
-  "Dihadi Salary",
+  DAILY_WAGE_PAYMENT_CATEGORY,
   "Other Company",
   "Other Expense",
   "Other",
@@ -73,7 +74,7 @@ export function DaybookForm({
       return uniquePermanentWorkerNames;
     }
 
-    if (entryType === "payment_given" && paymentGivenCategory === "Dihadi Salary") {
+    if (entryType === "payment_given" && paymentGivenCategory === DAILY_WAGE_PAYMENT_CATEGORY) {
       return uniqueDihadiWorkerNames;
     }
 

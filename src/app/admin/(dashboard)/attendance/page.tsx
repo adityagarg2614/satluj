@@ -9,7 +9,9 @@ import { DihadiAttendancePanel } from "@/components/dihadi-attendance-panel";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDateLabel, normalizeDateKey } from "@/lib/format";
+import { DIHADI_PAYMENT_CATEGORIES } from "@/lib/salary";
 import {
+  DAILY_WAGE_SHORT_LABEL,
   groupDihadiWorkersByName,
   normalizeWorkerIdentityName,
   resolveWorkerType,
@@ -32,12 +34,12 @@ type AttendancePageProps = {
 
 const successMessages: Record<string, string> = {
   "attendance-saved": "Attendance saved successfully.",
-  "dihadi-added": "Dihadi worker added for this date.",
+  "dihadi-added": "Daily wage worker added for this date.",
 };
 
 const errorMessages: Record<string, string> = {
   "no-workers": "Add workers first before recording attendance.",
-  "dihadi-fields": "Please complete the dihadi worker details before saving.",
+  "dihadi-fields": "Please complete the daily wage worker details before saving.",
 };
 
 export default async function AttendancePage({ searchParams }: AttendancePageProps) {
@@ -52,7 +54,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
     DaybookEntryModel.find({
       entryDateKey: selectedDate,
       type: "payment_given",
-      category: "Dihadi Salary",
+      category: { $in: [...DIHADI_PAYMENT_CATEGORIES] },
     }).lean(),
   ]);
 

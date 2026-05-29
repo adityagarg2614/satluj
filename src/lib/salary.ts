@@ -4,7 +4,12 @@ import type { AttendanceStatus } from "@/models/attendance";
 import type { WorkerType } from "@/models/worker";
 
 export const PERMANENT_PAYMENT_CATEGORIES = ["Worker Salary", "Worker Advance"] as const;
-export const DIHADI_PAYMENT_CATEGORIES = ["Dihadi Salary"] as const;
+export const DAILY_WAGE_PAYMENT_CATEGORY = "Daily Wage Payment";
+export const LEGACY_DAILY_WAGE_PAYMENT_CATEGORY = "Dihadi Salary";
+export const DIHADI_PAYMENT_CATEGORIES = [
+  DAILY_WAGE_PAYMENT_CATEGORY,
+  LEGACY_DAILY_WAGE_PAYMENT_CATEGORY,
+] as const;
 export const WORKER_PAYMENT_CATEGORIES = [
   ...PERMANENT_PAYMENT_CATEGORIES,
   ...DIHADI_PAYMENT_CATEGORIES,
@@ -73,6 +78,14 @@ export type WorkerPaymentHistoryRecord = {
   note: string;
   createdAtLabel: string;
 };
+
+export function getWorkerPaymentCategoryLabel(category: string) {
+  if (category === LEGACY_DAILY_WAGE_PAYMENT_CATEGORY) {
+    return DAILY_WAGE_PAYMENT_CATEGORY;
+  }
+
+  return category;
+}
 
 function normalizePersonName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");

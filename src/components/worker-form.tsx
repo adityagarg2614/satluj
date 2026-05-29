@@ -16,7 +16,7 @@ export function WorkerForm() {
         ? {
             label: "Per-Day Salary",
             placeholder: "Enter per-day salary",
-            helper: "Daily wage for this dihadi worker.",
+            helper: "Daily wage for this daily wage worker.",
           }
         : {
             label: "Monthly Salary",
@@ -58,7 +58,7 @@ export function WorkerForm() {
             className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
           >
             <option value="permanent">Permanent Worker</option>
-            <option value="dihadi">Dihadi Worker</option>
+            <option value="dihadi">Daily Wage Worker</option>
           </select>
         </label>
 

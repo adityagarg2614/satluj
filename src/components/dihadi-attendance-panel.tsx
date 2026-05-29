@@ -47,11 +47,11 @@ export function DihadiAttendancePanel({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-200">
-            Dihadi Workers
+            Daily Wage Workers
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">Daily-basis worker record</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">
-            Add only the dihadi workers who came on {selectedDate}. Permanent workers stay
+            Add only the daily wage workers who came on {selectedDate}. Permanent workers stay
             in the main attendance register below.
           </p>
         </div>
@@ -62,13 +62,13 @@ export function DihadiAttendancePanel({
           className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200"
         >
           <Plus className="size-4" />
-          Add Dihadi Worker
+          Add Daily Wage Worker
         </button>
       </div>
 
       {records.length === 0 ? (
         <div className="mt-5 rounded-3xl border border-dashed border-white/12 bg-slate-950/18 p-5 text-sm leading-6 text-slate-300">
-          No dihadi worker added for this date yet.
+          No daily wage worker added for this date yet.
         </div>
       ) : (
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -83,7 +83,7 @@ export function DihadiAttendancePanel({
                   <p className="mt-1 text-sm text-amber-200">Daily-basis worker</p>
                 </div>
                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-slate-300">
-                  Dihadi
+                  Daily Wage
                 </span>
               </div>
 
@@ -124,7 +124,7 @@ export function DihadiAttendancePanel({
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-200">
-                  Add Dihadi Worker
+                  Add Daily Wage Worker
                 </p>
                 <h3 className="mt-2 text-lg font-semibold text-white">
                   Save a same-day worker for {selectedDate}
@@ -145,7 +145,7 @@ export function DihadiAttendancePanel({
                   value={workerName}
                   onChange={(event) => setWorkerName(event.target.value)}
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                  placeholder="Select or type dihadi worker name"
+                  placeholder="Select or type worker name"
                 />
               </label>
 
@@ -181,7 +181,7 @@ export function DihadiAttendancePanel({
                   Cancel
                 </button>
                 <SubmitButton
-                  label="Save Dihadi Worker"
+                  label="Save Daily Wage Worker"
                   pendingLabel="Saving..."
                   className="inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
                 />

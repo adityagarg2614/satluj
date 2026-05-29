@@ -14,6 +14,7 @@ import {
 import { deleteDaybookEntryAction } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { formatNumber } from "@/lib/format";
+import { getWorkerPaymentCategoryLabel } from "@/lib/salary";
 
 type DaybookEntryViewItem = {
   id: string;
@@ -122,7 +123,7 @@ export function DaybookEntriesView({
                       {typeLabelMap[entry.type]}
                     </span>
                     <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-slate-300">
-                      {entry.category}
+                      {getWorkerPaymentCategoryLabel(entry.category)}
                     </span>
                   </div>
 
