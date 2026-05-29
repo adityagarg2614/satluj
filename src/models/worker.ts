@@ -1,11 +1,16 @@
 import { Schema, model, models } from "mongoose";
 
+export const WORKER_TYPES = ["permanent", "dihadi"] as const;
+
+export type WorkerType = (typeof WORKER_TYPES)[number];
+
 export type WorkerDocument = {
   name: string;
   role: string;
+  workerType: WorkerType;
   joiningDate: Date;
   salary: number;
-  phoneNumber: string;
+  phoneNumber?: string;
   photoUrl?: string;
 };
 
@@ -21,6 +26,13 @@ const workerSchema = new Schema<WorkerDocument>(
       required: true,
       trim: true,
     },
+    workerType: {
+      type: String,
+      enum: WORKER_TYPES,
+      required: true,
+      default: "permanent",
+      index: true,
+    },
     joiningDate: {
       type: Date,
       required: true,
@@ -33,8 +45,9 @@ const workerSchema = new Schema<WorkerDocument>(
     },
     phoneNumber: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
+      default: "",
     },
     photoUrl: {
       type: String,
