@@ -1,14 +1,22 @@
-import { CalendarDays, CheckCircle2, Clock3, PhoneCall, Users, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock3, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 
 import { saveAttendanceAction } from "@/app/admin/actions";
 import { AttendanceDateNavigator } from "@/components/admin-route-controls";
 import { AttendanceManager } from "@/components/attendance-manager";
 import { AdminStatusToast } from "@/components/admin-toast";
+import { DihadiAttendancePanel } from "@/components/dihadi-attendance-panel";
 import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
-import { formatDate, formatDateLabel, normalizeDateKey } from "@/lib/format";
+import { formatDateLabel, normalizeDateKey } from "@/lib/format";
+import {
+  groupDihadiWorkersByName,
+  normalizeWorkerIdentityName,
+  resolveWorkerType,
+  sortWorkersForAdmin,
+} from "@/lib/worker-utils";
 import { AttendanceModel } from "@/models/attendance";
+import { DaybookEntryModel } from "@/models/daybook-entry";
 import { WorkerModel } from "@/models/worker";
 
 
@@ -24,10 +32,12 @@ type AttendancePageProps = {
 
 const successMessages: Record<string, string> = {
   "attendance-saved": "Attendance saved successfully.",
+  "dihadi-added": "Dihadi worker added for this date.",
 };
 
 const errorMessages: Record<string, string> = {
   "no-workers": "Add workers first before recording attendance.",
+  "dihadi-fields": "Please complete the dihadi worker details before saving.",
 };
 
 export default async function AttendancePage({ searchParams }: AttendancePageProps) {
@@ -36,12 +46,46 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
   const params = await searchParams;
   const selectedDate = normalizeDateKey(params.date);
 
-  const [workers, attendance] = await Promise.all([
-    WorkerModel.find().sort({ createdAt: -1 }).lean(),
+  const [workers, attendance, dihadiSalaryEntries] = await Promise.all([
+    WorkerModel.find().lean(),
     AttendanceModel.find({ dateKey: selectedDate }).lean(),
+    DaybookEntryModel.find({
+      entryDateKey: selectedDate,
+      type: "payment_given",
+      category: "Dihadi Salary",
+    }).lean(),
   ]);
 
-  const serializedWorkers = workers.map((worker) => ({
+  const sortedWorkers = sortWorkersForAdmin(workers);
+  const permanentWorkers = sortedWorkers.filter(
+    (worker) => resolveWorkerType(worker) === "permanent",
+  );
+  const dihadiGroups = groupDihadiWorkersByName(sortedWorkers);
+  const canonicalDihadiById = new Map(
+    dihadiGroups.map((group) => [group.canonicalWorker._id!.toString(), group]),
+  );
+  const dihadiCanonicalIdByWorkerId = new Map<string, string>();
+  const dihadiCanonicalIdByName = new Map<string, string>();
+
+  dihadiGroups.forEach((group) => {
+    const canonicalId = group.canonicalWorker._id!.toString();
+    dihadiCanonicalIdByName.set(group.normalizedName, canonicalId);
+    group.workerIds.forEach((workerId) => {
+      dihadiCanonicalIdByWorkerId.set(workerId, canonicalId);
+    });
+  });
+
+  const dihadiSuggestions = dihadiGroups.map((group) => {
+    const latestMember = group.members[group.members.length - 1] ?? group.canonicalWorker;
+
+    return {
+      id: group.canonicalWorker._id!.toString(),
+      name: group.canonicalWorker.name,
+      salary: Number(latestMember.salary ?? group.canonicalWorker.salary ?? 0),
+    };
+  });
+
+  const serializedWorkers = permanentWorkers.map((worker) => ({
     _id: worker._id.toString(),
     name: worker.name,
     role: worker.role,
@@ -58,7 +102,25 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
     attendance.map((record) => [record.workerId.toString(), record]),
   );
 
-  const totals = workers.reduce(
+  const paidTodayByWorker = new Map<string, number>();
+  dihadiSalaryEntries.forEach((entry) => {
+    const workerId =
+      (entry.workerId?.toString()
+        ? dihadiCanonicalIdByWorkerId.get(entry.workerId.toString())
+        : undefined) ??
+      dihadiCanonicalIdByName.get(normalizeWorkerIdentityName(entry.partyName));
+
+    if (!workerId) {
+      return;
+    }
+
+    paidTodayByWorker.set(
+      workerId,
+      (paidTodayByWorker.get(workerId) ?? 0) + Number(entry.amount ?? 0),
+    );
+  });
+
+  const totals = permanentWorkers.reduce(
     (acc, worker) => {
       const current = attendanceMap.get(worker._id.toString());
       const status = current?.status ?? "absent";
@@ -80,6 +142,47 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
     },
   );
 
+  const dihadiRecordMap = attendance.reduce<
+    Map<
+      string,
+      {
+        workerId: string;
+        name: string;
+        salary: number;
+        paidToday: number;
+        dayValue: number;
+      }
+    >
+  >((acc, record) => {
+      const canonicalWorkerId = dihadiCanonicalIdByWorkerId.get(record.workerId.toString());
+
+      if (!canonicalWorkerId || record.status === "absent") {
+        return acc;
+      }
+
+      const group = canonicalDihadiById.get(canonicalWorkerId);
+
+      if (!group) {
+        return acc;
+      }
+
+      const latestMember = group.members[group.members.length - 1] ?? group.canonicalWorker;
+      const nextDayValue =
+        record.status === "present" ? 1 : record.status === "half" ? 0.5 : 0;
+      const existingRecord = acc.get(canonicalWorkerId);
+
+      acc.set(canonicalWorkerId, {
+        workerId: canonicalWorkerId,
+        name: group.canonicalWorker.name,
+        salary: Number(latestMember.salary ?? group.canonicalWorker.salary ?? 0),
+        paidToday: paidTodayByWorker.get(canonicalWorkerId) ?? 0,
+        dayValue: Math.max(existingRecord?.dayValue ?? 0, nextDayValue),
+      });
+
+      return acc;
+    }, new Map());
+  const dihadiRecords = Array.from(dihadiRecordMap.values());
+
   const successMessage = params.success ? successMessages[params.success] : null;
   const errorMessage = params.error ? errorMessages[params.error] : null;
   const selectedDateLabel = formatDateLabel(selectedDate);
@@ -92,9 +195,9 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
         {[
           {
             icon: Users,
-            label: "Total Workers",
-            value: String(workers.length).padStart(2, "0"),
-            detail: "Available in the attendance register",
+            label: "Permanent Workers",
+            value: String(permanentWorkers.length).padStart(2, "0"),
+            detail: "Shown in the main attendance register",
           },
           {
             icon: CheckCircle2,
@@ -182,9 +285,16 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
           </div>
         </div>
 
+        <DihadiAttendancePanel
+          selectedDate={selectedDate}
+          records={dihadiRecords}
+          suggestions={dihadiSuggestions}
+        />
+
         {serializedWorkers.length === 0 ? (
           <div className="mt-6 rounded-3xl border border-dashed border-white/12 bg-white/3 p-6 text-sm leading-6 text-slate-300">
-            No workers added yet. Go to the worker management page first.
+            No permanent workers added yet. Use the worker management page first if you
+            want them in the main attendance register.
           </div>
         ) : (
           <form action={saveAttendanceAction} className="mt-6">
@@ -193,7 +303,6 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
             <AttendanceManager
               workers={serializedWorkers}
               initialAttendance={serializedAttendance}
-              selectedDate={selectedDate}
             />
 
             <SubmitButton

@@ -4,6 +4,12 @@ import { ArrowRight } from "lucide-react";
 import { buildMonthlyAttendanceSummary } from "@/lib/attendance-summary";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatMonthLabel, getCurrentMonthKey } from "@/lib/format";
+import {
+  getWorkerRoleLabel,
+  hasDisplayPhoneNumber,
+  resolveWorkerType,
+  sortWorkersForAdmin,
+} from "@/lib/worker-utils";
 import { AttendanceModel } from "@/models/attendance";
 import { WorkerModel } from "@/models/worker";
 
@@ -14,7 +20,7 @@ export default async function AdminDashboardHomePage() {
 
   const currentMonthKey = getCurrentMonthKey();
   const [workers, monthlyAttendance] = await Promise.all([
-    WorkerModel.find().sort({ createdAt: -1 }).lean(),
+    WorkerModel.find().lean(),
     AttendanceModel.find({
       dateKey: {
         $regex: `^${currentMonthKey}`,
@@ -22,8 +28,16 @@ export default async function AdminDashboardHomePage() {
     }).lean(),
   ]);
 
-  const monthlySummary = buildMonthlyAttendanceSummary(workers, monthlyAttendance, currentMonthKey);
-  const recentWorkers = workers.slice(0, 5);
+  const sortedWorkers = sortWorkersForAdmin(workers);
+  const permanentWorkers = sortedWorkers.filter(
+    (worker) => resolveWorkerType(worker) === "permanent",
+  );
+  const monthlySummary = buildMonthlyAttendanceSummary(
+    permanentWorkers,
+    monthlyAttendance,
+    currentMonthKey,
+  );
+  const recentWorkers = sortedWorkers.slice(0, 5);
 
   return (
     <main className="mx-auto max-w-7xl">
@@ -127,14 +141,19 @@ export default async function AdminDashboardHomePage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-lg font-semibold text-white">{worker.name}</p>
-                      <p className="mt-1 text-sm text-amber-200">{worker.role}</p>
+                      <p className="mt-1 text-sm text-amber-200">
+                        {getWorkerRoleLabel(worker)}
+                      </p>
                     </div>
                     <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.24em] text-slate-300">
-                      Worker
+                      {resolveWorkerType(worker) === "dihadi" ? "Dihadi" : "Permanent"}
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-slate-300">
-                    Joined {formatDate(worker.joiningDate)} • {worker.phoneNumber}
+                    Joined {formatDate(worker.joiningDate)}
+                    {hasDisplayPhoneNumber(worker.phoneNumber)
+                      ? ` • ${worker.phoneNumber}`
+                      : ""}
                   </p>
                 </div>
               ))}
