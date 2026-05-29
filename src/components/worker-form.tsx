@@ -31,7 +31,7 @@ export function WorkerForm() {
       {isDihadi ? (
         <>
           <input type="hidden" name="joiningDate" value={todayDateKey} />
-          <input type="hidden" name="role" value="Dihadi" />
+          <input type="hidden" name="role" value="Daily Wage" />
         </>
       ) : null}
 

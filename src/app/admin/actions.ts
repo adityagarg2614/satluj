@@ -141,7 +141,7 @@ export async function addDihadiWorkerForDayAction(formData: FormData) {
 
   if (existingWorker) {
     existingWorker.workerType = "dihadi";
-    existingWorker.role = existingWorker.role?.trim() || "Daily Wage";
+    existingWorker.role = "Daily Wage";
     existingWorker.salary = salary;
     existingWorker.phoneNumber =
       existingWorker.phoneNumber?.trim() || DIHADI_PHONE_PLACEHOLDER;

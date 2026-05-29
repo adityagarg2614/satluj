@@ -8,6 +8,7 @@ import { formatMonthLabel, formatNumber, normalizeMonthKey } from "@/lib/format"
 import {
   DAILY_WAGE_RECORDS_LABEL,
   groupDihadiWorkersByName,
+  getWorkerRoleLabel,
   hasDisplayPhoneNumber,
   normalizeWorkerIdentityName,
   resolveWorkerType,
@@ -261,7 +262,7 @@ export default async function DihadiRecordsPage({
               {DAILY_WAGE_RECORDS_LABEL}
             </p>
             <h1 className="mt-5 font-display text-5xl text-white">
-              Daily-basis worker attendance and payout view.
+              Daily wage worker attendance and payout view.
             </h1>
             <p className="mt-4 text-lg leading-8 text-slate-300">
               Review all daily wage workers separately from permanent staff, including days
@@ -350,7 +351,7 @@ export default async function DihadiRecordsPage({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-5 py-4">{worker.role}</td>
+                      <td className="px-5 py-4">{getWorkerRoleLabel(worker)}</td>
                       <td className="px-5 py-4">Rs. {formatNumber(worker.dailySalary)}</td>
                       <td className="px-5 py-4">
                         <div>

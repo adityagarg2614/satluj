@@ -203,7 +203,7 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
             <h1 className="mt-4 font-display text-5xl text-white">{ledgerWorker.name}</h1>
             <p className="mt-4 text-lg leading-8 text-slate-300">
               {workerType === "dihadi"
-                ? "Daily-rate earnings, worked days, and paid payments stay together here for a clear daily wage record."
+                ? "Daily-rate earnings, worked days, and payment history stay together here for a clear daily wage record."
                 : "Salary, attendance-earned amount, and payment history for this worker stay together here so admin can review the full record clearly."}
             </p>
 
@@ -349,13 +349,12 @@ export default async function WorkerSalaryPage({ params }: WorkerSalaryPageProps
         <div className="glass-panel rounded-4xl p-7">
           <h2 className="text-xl font-semibold text-white">Payment History</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300">
-            Every salary payment from the daybook is listed here with the date it was
-            recorded.
+            Every recorded payment from the daybook is listed here with the date it was recorded.
           </p>
 
           {ledger.paymentHistory.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-dashed border-white/12 bg-white/3 p-6 text-sm leading-6 text-slate-300">
-              No salary or advance payment entries have been saved for this worker yet.
+              No payment entries have been saved for this worker yet.
             </div>
           ) : (
             <div className="mt-6 space-y-4">

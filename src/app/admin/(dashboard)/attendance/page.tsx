@@ -11,7 +11,6 @@ import { connectToDatabase } from "@/lib/db";
 import { formatDateLabel, normalizeDateKey } from "@/lib/format";
 import { DIHADI_PAYMENT_CATEGORIES } from "@/lib/salary";
 import {
-  DAILY_WAGE_SHORT_LABEL,
   groupDihadiWorkersByName,
   normalizeWorkerIdentityName,
   resolveWorkerType,

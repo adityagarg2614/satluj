@@ -11,7 +11,6 @@ import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatNumber } from "@/lib/format";
 import {
-  DAILY_WAGE_RECORDS_LABEL,
   getWorkerTypeBadgeLabel,
   groupDihadiWorkersByName,
   getWorkerRoleLabel,
