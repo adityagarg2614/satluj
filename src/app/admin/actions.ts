@@ -11,7 +11,11 @@ import {
 } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db";
 import { normalizeDateKey } from "@/lib/format";
-import { WORKER_PAYMENT_CATEGORIES } from "@/lib/salary";
+import {
+  DIHADI_PAYMENT_CATEGORIES,
+  WORKER_PAYMENT_CATEGORIES,
+} from "@/lib/salary";
+import { resolveWorkerType } from "@/lib/worker-utils";
 import {
   ATTENDANCE_STATUSES,
   AttendanceModel,
@@ -19,7 +23,9 @@ import {
 } from "@/models/attendance";
 import { CompanyModel } from "@/models/company";
 import { DAYBOOK_ENTRY_TYPES, DaybookEntryModel } from "@/models/daybook-entry";
-import { WorkerModel } from "@/models/worker";
+import { WorkerModel, WORKER_TYPES, type WorkerType } from "@/models/worker";
+
+const DIHADI_PHONE_PLACEHOLDER = "N/A";
 
 function getStatusDayValue(status: AttendanceStatus) {
   if (status === "present") {
@@ -67,27 +73,102 @@ export async function addWorkerAction(formData: FormData) {
 
   const name = String(formData.get("name") ?? "").trim();
   const role = String(formData.get("role") ?? "").trim();
+  const workerTypeValue = String(formData.get("workerType") ?? "permanent").trim();
+  const workerType = WORKER_TYPES.includes(workerTypeValue as WorkerType)
+    ? (workerTypeValue as WorkerType)
+    : "permanent";
   const joiningDate = String(formData.get("joiningDate") ?? "").trim();
   const salary = Number(formData.get("salary") ?? 0);
   const phoneNumber = String(formData.get("phoneNumber") ?? "").trim();
   const photoUrl = String(formData.get("photoUrl") ?? "").trim();
+  const finalRole = workerType === "dihadi" ? "Dihadi" : role;
+  const finalJoiningDate = joiningDate || new Date().toISOString().slice(0, 10);
+  const finalPhoneNumber =
+    workerType === "dihadi" ? DIHADI_PHONE_PLACEHOLDER : phoneNumber;
 
-  if (!name || !role || !joiningDate || !phoneNumber || !salary) {
+  if (
+    !name ||
+    !salary ||
+    (workerType === "permanent" && (!role || !finalJoiningDate || !phoneNumber))
+  ) {
     redirect("/admin/workers?error=worker-fields");
   }
 
   await WorkerModel.create({
     name,
-    role,
-    joiningDate: new Date(joiningDate),
+    role: finalRole,
+    workerType,
+    joiningDate: new Date(finalJoiningDate),
     salary,
-    phoneNumber,
+    phoneNumber: finalPhoneNumber,
     photoUrl,
   });
 
   revalidatePath("/admin");
   revalidatePath("/admin/workers");
   redirect("/admin/workers?success=worker-added");
+}
+
+export async function addDihadiWorkerForDayAction(formData: FormData) {
+  await requireAdminSession();
+  await connectToDatabase();
+
+  const dateKey = normalizeDateKey(String(formData.get("date") ?? ""));
+  const name = String(formData.get("name") ?? "").trim();
+  const salary = Number(formData.get("salary") ?? 0);
+
+  if (!name || !salary) {
+    redirect(`/admin/attendance?date=${dateKey}&error=dihadi-fields`);
+  }
+
+  const existingWorkers = await WorkerModel.find({
+    name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
+  }).sort({ createdAt: 1 });
+  const existingWorker =
+    existingWorkers.find((worker) => resolveWorkerType(worker) === "dihadi") ?? null;
+
+  const worker =
+    existingWorker ??
+    (await WorkerModel.create({
+      name,
+      role: "Dihadi",
+      workerType: "dihadi",
+      joiningDate: new Date(`${dateKey}T00:00:00.000Z`),
+      salary,
+      phoneNumber: DIHADI_PHONE_PLACEHOLDER,
+      photoUrl: "",
+    }));
+
+  if (existingWorker) {
+    existingWorker.workerType = "dihadi";
+    existingWorker.role = existingWorker.role?.trim() || "Dihadi";
+    existingWorker.salary = salary;
+    existingWorker.phoneNumber =
+      existingWorker.phoneNumber?.trim() || DIHADI_PHONE_PLACEHOLDER;
+    await existingWorker.save();
+  }
+
+  await AttendanceModel.findOneAndUpdate(
+    { workerId: worker._id, dateKey },
+    {
+      workerId: worker._id,
+      dateKey,
+      date: new Date(`${dateKey}T00:00:00.000Z`),
+      status: "present",
+      dayValue: 1,
+    },
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    },
+  );
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/attendance");
+  revalidatePath("/admin/dihadi-records");
+  revalidatePath("/admin/daybook");
+  redirect(`/admin/attendance?date=${dateKey}&success=dihadi-added`);
 }
 
 export async function deleteWorkerAction(formData: FormData) {
@@ -182,6 +263,10 @@ function normalizeCompanyName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function normalizeWorkerNameRegex(name: string) {
+  return new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+}
+
 export async function addDaybookEntryAction(formData: FormData) {
   await requireAdminSession();
   await connectToDatabase();
@@ -190,6 +275,7 @@ export async function addDaybookEntryAction(formData: FormData) {
   const entryDateKey = normalizeDateKey(String(formData.get("entryDate") ?? ""));
   const partyName = String(formData.get("partyName") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim();
+  const expenseItem = String(formData.get("expenseItem") ?? formData.get("partyName") ?? "").trim();
 
   if (!DAYBOOK_ENTRY_TYPES.includes(entryType as (typeof DAYBOOK_ENTRY_TYPES)[number])) {
     redirect(`/admin/daybook?date=${entryDateKey}&error=invalid-type`);
@@ -277,12 +363,26 @@ export async function addDaybookEntryAction(formData: FormData) {
     payload.category = category;
     payload.amount = amount;
 
+    if (category === "Other Expense" && !expenseItem) {
+      redirect(`/admin/daybook?date=${entryDateKey}&error=missing-fields`);
+    }
+
+    if (category === "Other Expense") {
+      payload.partyName = expenseItem;
+    }
+
     if (entryType === "payment_given" && WORKER_PAYMENT_CATEGORIES.includes(category as (typeof WORKER_PAYMENT_CATEGORIES)[number])) {
-      const relatedWorker = await WorkerModel.findOne({
-        name: new RegExp(`^${partyName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
-      })
-        .select("_id")
-        .lean();
+      const workerType =
+        DIHADI_PAYMENT_CATEGORIES.includes(category as (typeof DIHADI_PAYMENT_CATEGORIES)[number])
+          ? "dihadi"
+          : "permanent";
+      const relatedWorker = (
+        await WorkerModel.find({
+          name: normalizeWorkerNameRegex(partyName),
+        })
+          .select("_id name role workerType")
+          .lean()
+      ).find((worker) => resolveWorkerType(worker) === workerType);
 
       if (relatedWorker?._id) {
         payload.workerId = relatedWorker._id;
