@@ -86,7 +86,6 @@ export default async function WorkerAttendancePage({
         workerName={worker.name}
         role={worker.role}
         monthLabel={formatMonthLabel(selectedMonth)}
-        monthKey={selectedMonth}
         summaryHref={summaryHref}
         days={days}
       />
