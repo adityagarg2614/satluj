@@ -29,13 +29,11 @@ type AttendanceRecord = {
 type AttendanceManagerProps = {
   workers: Worker[];
   initialAttendance: AttendanceRecord[];
-  selectedDate: string;
 };
 
 export function AttendanceManager({
   workers,
   initialAttendance,
-  selectedDate,
 }: AttendanceManagerProps) {
   // Create an initial map of workerId -> status
   const initialMap = useMemo(() => {
@@ -191,7 +189,11 @@ export function AttendanceManager({
             <div className="relative min-w-44">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value as "All" | "present" | "half" | "absent",
+                  )
+                }
                 className="w-full rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-2.5 text-sm text-white outline-none transition focus:border-amber-300/30"
               >
                 <option value="All">All Statuses</option>

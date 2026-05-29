@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   ArrowUpRight,
   Book,
@@ -55,6 +55,10 @@ const navItems: NavItem[] = [
         title: "Monthly Summary",
         href: "/admin/attendance-summary",
       },
+      {
+        title: "Dihadi Records",
+        href: "/admin/dihadi-records",
+      },
     ],
   },
   {
@@ -88,6 +92,10 @@ function getPageTitle(pathname: string) {
 
   if (pathname === "/admin/attendance-summary") {
     return "Monthly Attendance Summary";
+  }
+
+  if (pathname === "/admin/dihadi-records") {
+    return "Dihadi Records";
   }
 
   if (pathname === "/admin/daybook") {

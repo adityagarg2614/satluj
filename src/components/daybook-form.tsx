@@ -15,7 +15,8 @@ import { SubmitButton } from "@/components/submit-button";
 type DaybookFormProps = {
   selectedDate: string;
   companyNames: string[];
-  workerNames: string[];
+  permanentWorkerNames: string[];
+  dihadiWorkerNames: string[];
 };
 
 const purchaseMaterialOptions = {
@@ -26,11 +27,11 @@ const purchaseMaterialOptions = {
 const saleMaterialOptions = ["Granulated Slag Sand", "Revert Scrap Metal"];
 
 const paymentGivenCategories = [
-  "Sales Customer",
   "Purchase Company",
   "Worker Salary",
-  "Worker Advance",
-  "Other Person",
+  "Dihadi Salary",
+  "Other Company",
+  "Other Expense",
   "Other",
 ];
 
@@ -39,38 +40,67 @@ const paymentReceivedCategories = ["Sales Customer", "Any Person", "Other"];
 export function DaybookForm({
   selectedDate,
   companyNames,
-  workerNames,
+  permanentWorkerNames,
+  dihadiWorkerNames,
 }: DaybookFormProps) {
   const [entryType, setEntryType] = useState("purchase");
   const [purchaseSource, setPurchaseSource] = useState("local");
   const [purchaseMaterial, setPurchaseMaterial] = useState("Lanter");
   const [localSellerName, setLocalSellerName] = useState("");
-  const [paymentGivenCategory, setPaymentGivenCategory] = useState("Sales Customer");
+  const [paymentGivenCategory, setPaymentGivenCategory] = useState("Purchase Company");
   const [paymentReceivedCategory, setPaymentReceivedCategory] = useState("Sales Customer");
+
+  const uniqueCompanyNames = useMemo(
+    () => Array.from(new Set(companyNames.map((name) => name.trim()).filter(Boolean))),
+    [companyNames],
+  );
+  const uniquePermanentWorkerNames = useMemo(
+    () =>
+      Array.from(new Set(permanentWorkerNames.map((name) => name.trim()).filter(Boolean))),
+    [permanentWorkerNames],
+  );
+  const uniqueDihadiWorkerNames = useMemo(
+    () => Array.from(new Set(dihadiWorkerNames.map((name) => name.trim()).filter(Boolean))),
+    [dihadiWorkerNames],
+  );
 
   const partySuggestions = useMemo(() => {
     if (entryType === "sale") {
-      return companyNames;
+      return uniqueCompanyNames;
+    }
+
+    if (entryType === "payment_given" && paymentGivenCategory === "Worker Salary") {
+      return uniquePermanentWorkerNames;
+    }
+
+    if (entryType === "payment_given" && paymentGivenCategory === "Dihadi Salary") {
+      return uniqueDihadiWorkerNames;
     }
 
     if (
       entryType === "payment_given" &&
-      (paymentGivenCategory === "Worker Salary" ||
-        paymentGivenCategory === "Worker Advance")
+      (paymentGivenCategory === "Purchase Company" ||
+        paymentGivenCategory === "Other Company")
     ) {
-      return workerNames;
-    }
-
-    return companyNames;
-  }, [companyNames, entryType, paymentGivenCategory, workerNames]);
-
-  const receivedSuggestions = useMemo(() => {
-    if (paymentReceivedCategory === "Sales Customer") {
-      return companyNames;
+      return uniqueCompanyNames;
     }
 
     return [];
-  }, [companyNames, paymentReceivedCategory]);
+  }, [
+    entryType,
+    paymentGivenCategory,
+    uniqueCompanyNames,
+    uniqueDihadiWorkerNames,
+    uniquePermanentWorkerNames,
+  ]);
+
+  const receivedSuggestions = useMemo(() => {
+    if (paymentReceivedCategory === "Sales Customer") {
+      return uniqueCompanyNames;
+    }
+
+    return [];
+  }, [paymentReceivedCategory, uniqueCompanyNames]);
 
   return (
     <div className="glass-panel rounded-4xl p-7">
@@ -265,14 +295,24 @@ export function DaybookForm({
             </div>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-200">Paid To</span>
+              <span className="text-sm font-medium text-slate-200">
+                {paymentGivenCategory === "Other Expense" ? "Expense Item" : "Paid To"}
+              </span>
               <input
                 type="text"
                 name="partyName"
                 required
-                list="party-name-options"
+                list={
+                  paymentGivenCategory === "Other Expense" || partySuggestions.length === 0
+                    ? undefined
+                    : "party-name-options"
+                }
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-amber-300/40"
-                placeholder="Worker, company, customer, or any other person"
+                placeholder={
+                  paymentGivenCategory === "Other Expense"
+                    ? "Diesel, machine repair, tea, loading rope..."
+                    : "Worker or company name"
+                }
               />
             </label>
           </>
@@ -342,20 +382,20 @@ export function DaybookForm({
         />
 
         <datalist id="saved-company-names">
-          {companyNames.map((company) => (
-            <option key={company} value={company} />
+          {uniqueCompanyNames.map((company, index) => (
+            <option key={`company-${index}-${company}`} value={company} />
           ))}
         </datalist>
 
         <datalist id="party-name-options">
-          {partySuggestions.map((name) => (
-            <option key={name} value={name} />
+          {partySuggestions.map((name, index) => (
+            <option key={`party-${index}-${name}`} value={name} />
           ))}
         </datalist>
 
         <datalist id="received-party-options">
-          {receivedSuggestions.map((name) => (
-            <option key={name} value={name} />
+          {receivedSuggestions.map((name, index) => (
+            <option key={`received-${index}-${name}`} value={name} />
           ))}
         </datalist>
       </form>
