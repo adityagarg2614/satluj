@@ -11,6 +11,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { connectToDatabase } from "@/lib/db";
 import { formatDate, formatNumber } from "@/lib/format";
 import {
+  groupDihadiWorkersByName,
   getWorkerRoleLabel,
   resolveWorkerType,
   sortWorkersForAdmin,
@@ -52,9 +53,18 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
   const permanentWorkers = sortedWorkers.filter(
     (worker) => resolveWorkerType(worker) === "permanent",
   );
-  const dihadiWorkers = sortedWorkers.filter(
+  const rawDihadiWorkers = sortedWorkers.filter(
     (worker) => resolveWorkerType(worker) === "dihadi",
   );
+  const dihadiWorkers = groupDihadiWorkersByName(rawDihadiWorkers).map((group) => ({
+    ...group.canonicalWorker,
+    salary: Number(
+      (group.members[group.members.length - 1] ?? group.canonicalWorker).salary ??
+        group.canonicalWorker.salary ??
+        0,
+    ),
+    duplicateCount: group.members.length,
+  }));
 
   return (
     <main className="mx-auto max-w-7xl">
@@ -115,6 +125,10 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
                       {section.workers.map((worker) => {
                         const workerType = resolveWorkerType(worker);
                         const isDihadi = workerType === "dihadi";
+                        const duplicateCount =
+                          "duplicateCount" in worker && typeof worker.duplicateCount === "number"
+                            ? worker.duplicateCount
+                            : 1;
 
                         return (
                           <article
@@ -139,6 +153,11 @@ export default async function WorkersPage({ searchParams }: WorkerPageProps) {
                                 {section.salaryLabel}: Rs. {formatNumber(worker.salary ?? 0)}
                                 {isDihadi ? " / day" : " / month"}
                               </p>
+                              {isDihadi && duplicateCount > 1 ? (
+                                <p className="text-amber-200">
+                                  {duplicateCount} saved entries merged into one worker card
+                                </p>
+                              ) : null}
                               {!isDihadi && worker.phoneNumber ? (
                                 <p>Phone: {worker.phoneNumber}</p>
                               ) : null}

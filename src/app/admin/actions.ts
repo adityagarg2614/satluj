@@ -185,8 +185,26 @@ export async function deleteWorkerAction(formData: FormData) {
     redirect(`${returnTo}${separator}error=worker-delete-missing`);
   }
 
-  await AttendanceModel.deleteMany({ workerId });
-  await WorkerModel.findByIdAndDelete(workerId);
+  const worker = await WorkerModel.findById(workerId);
+
+  if (!worker) {
+    redirect(`${returnTo}${separator}error=worker-delete-missing`);
+  }
+
+  if (resolveWorkerType(worker) === "dihadi") {
+    const duplicateWorkers = await WorkerModel.find({
+      name: new RegExp(`^${worker.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
+    }).select("_id name role workerType");
+    const duplicateWorkerIds = duplicateWorkers
+      .filter((candidate) => resolveWorkerType(candidate) === "dihadi")
+      .map((candidate) => candidate._id);
+
+    await AttendanceModel.deleteMany({ workerId: { $in: duplicateWorkerIds } });
+    await WorkerModel.deleteMany({ _id: { $in: duplicateWorkerIds } });
+  } else {
+    await AttendanceModel.deleteMany({ workerId });
+    await WorkerModel.findByIdAndDelete(workerId);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/workers");
@@ -210,7 +228,24 @@ export async function updateWorkerSalaryAction(formData: FormData) {
     redirect(`${returnTo}${separator}error=worker-salary-fields`);
   }
 
-  await WorkerModel.findByIdAndUpdate(workerId, { salary });
+  const worker = await WorkerModel.findById(workerId);
+
+  if (!worker) {
+    redirect(`${returnTo}${separator}error=worker-salary-fields`);
+  }
+
+  if (resolveWorkerType(worker) === "dihadi") {
+    const duplicateWorkers = await WorkerModel.find({
+      name: new RegExp(`^${worker.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"),
+    }).select("_id name role workerType");
+    const duplicateWorkerIds = duplicateWorkers
+      .filter((candidate) => resolveWorkerType(candidate) === "dihadi")
+      .map((candidate) => candidate._id);
+
+    await WorkerModel.updateMany({ _id: { $in: duplicateWorkerIds } }, { salary });
+  } else {
+    await WorkerModel.findByIdAndUpdate(workerId, { salary });
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/workers");
