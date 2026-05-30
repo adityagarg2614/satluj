@@ -142,6 +142,32 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
       absent: 0,
     },
   );
+  const dailyWageTotals = attendance.reduce(
+    (acc, record) => {
+      const canonicalWorkerId = dihadiCanonicalIdByWorkerId.get(record.workerId.toString());
+
+      if (!canonicalWorkerId) {
+        return acc;
+      }
+
+      if (record.status === "present") {
+        acc.present += 1;
+      } else if (record.status === "half") {
+        acc.half += 1;
+      }
+
+      return acc;
+    },
+    {
+      present: 0,
+      half: 0,
+    },
+  );
+  const snapshotTotals = {
+    present: totals.present + dailyWageTotals.present,
+    half: totals.half + dailyWageTotals.half,
+    absent: totals.absent,
+  };
 
   const dihadiRecordMap = attendance.reduce<
     Map<
@@ -247,17 +273,17 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
               {[
                 {
                   label: "Present",
-                  value: totals.present,
+                  value: snapshotTotals.present,
                   tone: "border-emerald-300/16 bg-emerald-300/8 text-emerald-100",
                 },
                 {
                   label: "Half Day",
-                  value: totals.half,
+                  value: snapshotTotals.half,
                   tone: "border-amber-300/16 bg-amber-300/8 text-amber-100",
                 },
                 {
                   label: "Absent",
-                  value: totals.absent,
+                  value: snapshotTotals.absent,
                   tone: "border-rose-300/16 bg-rose-300/8 text-rose-100",
                 },
               ].map((item) => (
@@ -302,6 +328,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
             <input type="hidden" name="date" value={selectedDate} />
 
             <AttendanceManager
+              key={selectedDate}
               workers={serializedWorkers}
               initialAttendance={serializedAttendance}
             />
