@@ -220,7 +220,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
 
       
 
-      <section className="mt-8 glass-panel rounded-4xl p-7">
+      <section className=" glass-panel rounded-4xl p-7">
         <div className="flex items-center gap-3">
           <CalendarDays className="size-5 text-amber-200" />
           <h1 className="text-xl font-semibold text-white">Daily Attendance Register</h1>
