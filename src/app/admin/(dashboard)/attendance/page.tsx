@@ -218,43 +218,7 @@ export default async function AttendancePage({ searchParams }: AttendancePagePro
     <main className="mx-auto max-w-7xl">
       <AdminStatusToast successMessage={successMessage} errorMessage={errorMessage} />
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          {
-            icon: Users,
-            label: "Permanent Workers",
-            value: String(permanentWorkers.length).padStart(2, "0"),
-            detail: "Shown in the main attendance register",
-          },
-          {
-            icon: CheckCircle2,
-            label: "Present Today",
-            value: String(totals.present).padStart(2, "0"),
-            detail: selectedDate,
-          },
-          {
-            icon: Clock3,
-            label: "Half Day Today",
-            value: String(totals.half).padStart(2, "0"),
-            detail: "Saved against the selected date",
-          },
-          {
-            icon: XCircle,
-            label: "Absent Today",
-            value: String(totals.absent).padStart(2, "0"),
-            detail: "Workers not marked present or half day",
-          },
-        ].map((metric) => (
-          <div key={metric.label} className="glass-panel rounded-[1.75rem] p-6">
-            <metric.icon className="size-5 text-amber-200" />
-            <p className="mt-5 text-xs uppercase tracking-[0.28em] text-slate-400">
-              {metric.label}
-            </p>
-            <p className="mt-3 text-4xl font-semibold text-white">{metric.value}</p>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{metric.detail}</p>
-          </div>
-        ))}
-      </section>
+      
 
       <section className="mt-8 glass-panel rounded-4xl p-7">
         <div className="flex items-center gap-3">
